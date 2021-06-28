@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>shaders/robustwireframe.frag</file>
+        <file>shaders/robustwireframe.geom</file>
+        <file>shaders/robustwireframe.vert</file>
+        <file>WireframeEffect2.qml</file>
+        <file>WireframeMaterial222.qml</file>
+        <file>main.qml</file>
+    </qresource>
+</RCC>
