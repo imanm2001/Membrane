@@ -23,14 +23,16 @@ private:
     double _A0,_absA,_absAs,_LBdotN;
     Physics::VecD3d *_v1,*_v2,*_LB,*_temp1,*_temp2,*_temp3,*_AvP,*_A;
 
-
+    void Ap(int,Physics::VecD3d*,Physics::VecD3d*,Physics::VecD3d*,Physics::VecD3d*);
     void Avp(int,Physics::VecD3d*,Physics::VecD3d*,Physics::VecD3d*,Physics::VecD3d*);
-
+    void Atp(int,Physics::VecD3d*,Physics::VecD3d*,Physics::VecD3d*,Physics::VecD3d*);
 
     double getChi(int j1,int j2);
     void UP(int,int,int,Physics::VecD3d*,Physics::VecD3d*,Physics::VecD3d*,Physics::Tensor2* );
     void LsqP(int l,int j,Physics::VecD3d *ret);
     void TP(int,int,Physics::VecD3d *,Physics::VecD3d *,Physics::VecD3d *);
+    void TP1(int,int,Physics::VecD3d *,Physics::VecD3d *);
+    void TP2(int,int,Physics::VecD3d *,Physics::VecD3d *);
     void chiP(int,int,int,Physics::VecD3d *,Physics::VecD3d *);
 
 

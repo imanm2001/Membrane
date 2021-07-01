@@ -1,4 +1,3 @@
-//Amixed
 #ifndef BALLOON_H
 #define BALLOON_H
 #include <QObject>
@@ -21,7 +20,7 @@ private:
     Physics::VecD3d *_temp;
     Physics::SpringForce *_sf;
     int _step;
-
+    QRandomGenerator* _rand;
 public:
     double _l,_lsq,_totalA;
 

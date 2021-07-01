@@ -27,11 +27,15 @@ class Physics::BendingParameters
 
 public:
     double _T;
+    double _triA;
     double chiM,chiP;
+    double _cot1,_cot2;
     double _l,_lsq,_phi;
     Physics::VecD3d *_dxP,*_normal;
     Geometry::BeadInfo *_bi;
     Physics::Tensor2 *_tensor;
+    Geometry::Triangle * _tri;
+
 
 
     BendingParameters(Geometry::BeadInfo *bi);

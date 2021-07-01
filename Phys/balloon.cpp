@@ -1,25 +1,27 @@
 #include "balloon.h"
-#define _P 0.0
-#define _K 0.0
-#define _kappa 1
+#define _P 1
+#define _K 0
+#define _kappa 10
 
 Physics::Balloon::Balloon(double dt):SurfaceWithPhysics(),_dt(dt)
 {
+    _rand=_rand=QRandomGenerator::global();
     _dt*=1e-6;
-    _sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1.obj)"));
-    //_sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.obj)"));
+    //_sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_2.obj)"));
+    _sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.obj)"));
     double el=0;
     for(int i=0;i<_sphere->_edges->size();i++){
         auto e=_sphere->_edges->at(i);
+        el+=e->_restLength;
         e->_restLength=0.39528;
     }
-    std::cout<<el/_sphere->_edges->size()<<std::endl;
+    std::cout<<">>>"<<el/_sphere->_edges->size()<<std::endl;
     _tris=_sphere->_tris;
     //_sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\hex.obj)"));
     //_sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\cap.obj)"));
     //_sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\pyramid.obj)"));
     for(int i=0;i<_sphere->_tris->size();i++){
-        _sphere->_tris->at(i)->_curvater=1/1.0;
+        _sphere->_tris->at(i)->_curvater=1;
     }
     _temp=new Physics::VecD3d();
 
@@ -50,13 +52,16 @@ void Physics::Balloon::update(){
 
     double H=111110,MH=0;
     _l=0;
+    double A=0;
     for(int i=0;i<_sphere->_beads->size();i++){
         auto b=_sphere->_beads->at(i);
+
         BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
-                be->_curv=1;
+        be->_curv=1;
 
         be->orderConnections();
         be->updateBendingParameters();
+        A+=be->_Av;
         if(be->_curv>0){
             H=std::fmin(H,be->_H);
             MH=std::fmax(MH,be->_H);
@@ -67,12 +72,16 @@ void Physics::Balloon::update(){
     }
     _l/=(double)_beads->size();
 
-    //_dt=(0.5e-3-5e-3)*std::exp(-_step/1000.0)+5e-3;
-    _dt=5e-6;
+    if(_step<10000){
+        _dt=1e-6;
+    }else{
+        //_dt=(1e-8-5e-6)*std::exp(-(_step-10000)/5000.0)+5e-6;
+    }
+    _dt=1e-5;
     double p=_step<100?0: _P*fmin(1,std::exp((_step-100)/1000.0));
     double kappa=_kappa*(1-std::exp(-_step/10.0));
     if(_step%100==0){
-        std::cout<<H<<"\t"<<MH<<"\t"<<_l<<"\t"<<p<<"\t"<<kappa<<"\t"<<_dt<<std::endl;
+        std::cout<<H<<"\t"<<MH<<"\t"<<_l<<"\t"<<p<<"\t"<<kappa<<"\t"<<A<<"\t"<<_dt<<std::endl;
         //std::exit(-1);
     }
     //MC();
@@ -117,6 +126,9 @@ void Physics::Balloon::update(){
         auto b=_sphere->_beads->at(i);
         if(b->_GAMMA>0){
             b->update(_dt);
+         /*   b->_coords->_coords[0]+=1e-5*(_rand->generateDouble()-0.5);
+            b->_coords->_coords[1]+=1e-5*(_rand->generateDouble()-0.5);
+            b->_coords->_coords[2]+=1e-5*(_rand->generateDouble()-0.5);*/
         }
 
         if(upd){

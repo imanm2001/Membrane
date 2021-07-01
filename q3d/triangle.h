@@ -26,6 +26,8 @@ public:
 
     Geometry::BeadInfo* _v[3];
     Geometry::Edge * _e[3];
+    double _angles[3];
+    bool _isObtuse;
     Triangle(QObject*,int, BeadInfo* i0,BeadInfo* i1,BeadInfo* i2,double);
     Triangle(QObject*,int,Geometry::Edge *e1,Geometry::Edge *e2,Geometry::Edge *e3,double);
     float* getPositions();
@@ -39,6 +41,8 @@ public:
     void printEdges();
     double area();
     Physics::VecD3d* getLocation();
+    int getVertexIndex(BeadInfo*);
+    bool contains(BeadInfo*);
 };
 
 

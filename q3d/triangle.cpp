@@ -213,6 +213,10 @@ Physics::VecD3d* Geometry::Triangle::getNormal(){
     double dy2=DR(_v[2],_v[0],1);
     double dz2=DR(_v[2],_v[0],2);
 
+    double dx3=DR(_v[2],_v[1],0);
+    double dy3=DR(_v[2],_v[1],1);
+    double dz3=DR(_v[2],_v[1],2);
+
     _norm->_coords[0]=det(dy1,dy2,dz1,dz2);
     _norm->_coords[1]=det(dz1,dz2,dx1,dx2);
     _norm->_coords[2]=det(dx1,dx2,dy1,dy2);
@@ -229,6 +233,17 @@ Physics::VecD3d* Geometry::Triangle::getNormal(){
     }*/
     #endif
 
+    double dl1=std::sqrt(dx1*dx1+dy1*dy1+dz1*dz1);
+    double dl2=std::sqrt(dx2*dx2+dy2*dy2+dz2*dz2);
+    double dl3=std::sqrt(dx3*dx3+dy3*dy3+dz3*dz3);
+
+    double dot1=dx1*dx2+dy1*dy2+dz1*dz2;
+    double dot2=-(dx1*dx3+dy1*dy3+dz1*dz3);
+
+    _angles[0]=std::acos(dot1/(dl1*dl2));
+    _angles[1]=std::acos(dot2/(dl1*dl3));
+    _angles[2]=PI-_angles[0]-_angles[1];
+    _isObtuse=_angles[0]>PI2||_angles[1]>PI2||_angles[2]>PI2;
 
     return _norm;
 }
@@ -244,4 +259,18 @@ Physics::VecD3d* Geometry::Triangle::getLocation(){
     _location->add(_v[2]->_coords);
     _location->multConst(1/3.0);
     return _location;
+}
+int Geometry::Triangle::getVertexIndex(BeadInfo* bi){
+    int ret=-1;
+    if(bi==_v[0]){
+        ret=0;
+    }else if(bi==_v[1]){
+        ret=1;
+    }else if(bi==_v[2]){
+        ret=2;
+    }
+    return ret;
+}
+bool Geometry::Triangle::contains(BeadInfo* bi){
+    return _v[0]==bi||_v[1]==bi||_v[2]==bi;
 }

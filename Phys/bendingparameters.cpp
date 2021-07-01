@@ -19,6 +19,12 @@ void Physics::BendingParameters::update(Physics::BeadInfo* bj){
     _dxP->sub(bj->_coords);
     _lsq=_dxP->dot(_dxP);
     _l=std::sqrt(_lsq);
+    if(_l<=0||_l!=_l){
+
+        _bi->_coords->print();
+        bj->_coords->print();
+        std::cout<<_l<<std::endl;
+    }
     assert(_l>0);
     assert(_l==_l);
     assert(!isinf(_l));

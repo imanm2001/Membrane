@@ -118,6 +118,7 @@ void Physics::BendingEnergy::updateBendingParameters(){
     _LB->zero();
     _Av=0;
     _triA=0;
+    double Av2=0;
     for(int j=0;j<size;j++){
 
         int jp1=fixIndex(j+1,_bi->_connections),jp2=fixIndex(j-1,_bi->_connections);
@@ -136,7 +137,8 @@ void Physics::BendingEnergy::updateBendingParameters(){
         auto paramp=_bi->_bendingParameters->at(jp1);
         _temp1->setValues(param->_dxP);
         _temp1->cross(paramp->_dxP,_temp2);
-        _triA+=_temp2->len()/2.0;
+        param->_triA=_temp2->len()/2.0;
+        _triA+=param->_triA;
         double chi1=getChi(j,jp1), chi2=getChi(j,jp2);
         if(chi1*chi1>=1){
             std::cout<<chi1<<"\t"<<chi2<<"\t"<<_border<<std::endl;
@@ -149,7 +151,10 @@ void Physics::BendingEnergy::updateBendingParameters(){
 */
         param->chiP=chi1;
         param->chiM=chi2;
-        param->_T=chi1/std::sqrt(1-chi1*chi1)+chi2/std::sqrt(1-chi2*chi2);
+        param->_cot1=chi1/std::sqrt(1-chi1*chi1);
+        double cos2=getChi(jp1,j);
+        param->_cot2=cos2/std::sqrt(1-cos2*cos2);
+        param->_T=param->_cot1+chi2/std::sqrt(1-chi2*chi2);
 
 
         _temp1->setValues(param->_dxP);
@@ -157,9 +162,30 @@ void Physics::BendingEnergy::updateBendingParameters(){
 
         _temp1->debug();
         _v1->add(_temp1);
-        _Av+=param->_lsq*param->_T;
+
+        auto tri=param->_tri;
+
+        if(tri->_isObtuse){
+            if(tri->_angles[tri->getVertexIndex(_bi)]<PI2){
+                _Av+=param->_triA/4.0;
+            }else{
+                _Av+=param->_triA/2.0;
+            }
+        }else{
+            double t=(param->_lsq*param->_cot1+paramp->_lsq*param->_cot2)/8.0;
+            if(t<0){
+                std::cout<<chi1<<"__\t"<<cos2<<std::endl;
+            }
+            assert(t>0);
+            _Av+=t;
+        }
+
+//        _Av+=param->_lsq*param->_T;
+
     }
-    _Av=_Av/8;
+    //_Av=_Av/8.0;
+    //Av2/=8.0;
+
 
     assert(_Av==_Av);
     assert(_Av!=0);
@@ -205,6 +231,7 @@ void Physics::BendingEnergy::updateBendingParameters(){
     _SIGN=SIGN(_LBdotN);
 
 
+
     //_Av=_triA/3.0;
     _H=_SIGN*_LB->len()/(4*_Av);
     //_H= _LB->len()/(4*_Av);
@@ -226,7 +253,7 @@ void Physics::BendingEnergy::orderConnections(){
             s++;
         }
     }
-int csize=_bi->_connections->size();
+    int csize=_bi->_connections->size();
     if(csize>2){
         int numnull=0;
 
@@ -238,14 +265,14 @@ int csize=_bi->_connections->size();
             if(ed->_tris[1]==nullptr){
                 if(i>0){
                     if(!switched){
-                    auto t=_bi->_connections->at(0);
-                    _bi->_connections->replace(0,ed);
-                    _bi->_connections->replace(i,t);
+                        auto t=_bi->_connections->at(0);
+                        _bi->_connections->replace(0,ed);
+                        _bi->_connections->replace(i,t);
 
-                    auto bp=_bi->_bendingParameters->at(0);
-                    auto bp2=_bi->_bendingParameters->at(i);
-                    _bi->_bendingParameters->replace(0,bp2);
-                    _bi->_bendingParameters->replace(i,bp);
+                        auto bp=_bi->_bendingParameters->at(0);
+                        auto bp2=_bi->_bendingParameters->at(i);
+                        _bi->_bendingParameters->replace(0,bp2);
+                        _bi->_bendingParameters->replace(i,bp);
                     }else{
                         auto t=_bi->_connections->at(csize-1);
                         _bi->_connections->replace(0,ed);
@@ -270,7 +297,7 @@ int csize=_bi->_connections->size();
         Geometry::Edge* e2=tri->edgeWithVertexExclude(_bi,firstE);
 
         _bi->_bendingParameters->at(0)->_normal=tri->_norm;
-
+        _bi->_bendingParameters->at(0)->_tri=tri;
         int index=1;
 
         //zero|=tri->_curvater==0;
@@ -285,20 +312,18 @@ int csize=_bi->_connections->size();
 
             tri=e2->_tris[0]==tri?e2->_tris[1]:e2->_tris[0];
 
-
-
-
             if(tri!=nullptr){
                 e2=tri->edgeWithVertexExclude(_bi,e2);
 
                 //zero|=tri->_curvater==0;
-
-                _bi->_bendingParameters->at(index)->_normal=tri->_norm;
+                 auto bp=_bi->_bendingParameters->at(index);
+                bp->_normal=tri->_norm;
+                bp->_tri=tri;
 
             }else{
                 _bi->_bendingParameters->at(index)->_normal=_bi->_bendingParameters->at(index-1)->_normal;
                 assert(index==(_bi->_connections->size()-1));
-            index++;
+                index++;
                 break;
             }
             index++;
@@ -312,6 +337,7 @@ int csize=_bi->_connections->size();
             }
         }else{
             _curv=tri->_curvater;
+            ;
             //_curv/=_bi->_connections->size();
         }
     }else{
@@ -358,6 +384,32 @@ void Physics::BendingEnergy::TP(int l,int j,Physics::VecD3d *temp,Physics::VecD3
     ret->add(temp2);
 
 }
+void Physics::BendingEnergy::TP1(int l,int j,Physics::VecD3d *temp,Physics::VecD3d *ret){
+    auto bp= _bi->_bendingParameters->at(j);
+
+    double t1=(1-bp->chiM*bp->chiM);
+    assert(t1>0);
+    t1=std::sqrt(t1*t1*t1);
+    chiP(l,j,fixIndex(j+1,_bi->_connections),temp,ret);
+    ret->multConst(1.0/t1);
+    ret->debug();
+
+
+}
+
+void Physics::BendingEnergy::TP2(int l,int j,Physics::VecD3d *temp,Physics::VecD3d *ret){
+    auto bp= _bi->_bendingParameters->at(j);
+
+    double t1=(1-bp->chiM*bp->chiM);
+    assert(t1>0);
+    t1=std::sqrt(t1*t1*t1);
+    chiP(l,fixIndex(j+1,_bi->_connections),j,temp,ret);
+    ret->multConst(1.0/t1);
+    ret->debug();
+
+
+}
+
 void Physics::BendingEnergy::chiP(int l,int j,int m,Physics::VecD3d *temp,Physics::VecD3d *ret){
 
     auto bj=_bi->_bendingParameters->at(j);
@@ -508,7 +560,8 @@ void Physics::BendingEnergy::Ep2(int l,VecD3d * ret){
     ret->debug();
 }
 
-void Physics::BendingEnergy::Avp(int l,Physics::VecD3d* t1,Physics::VecD3d* t2,Physics::VecD3d*t3,Physics::VecD3d* ret){
+
+void Physics::BendingEnergy::Atp(int l,Physics::VecD3d* t1,Physics::VecD3d* t2,Physics::VecD3d*t3,Physics::VecD3d* ret){
     ret->zero();
     int st=0,end=_bi->_connections->size();
 
@@ -540,8 +593,72 @@ void Physics::BendingEnergy::Avp(int l,Physics::VecD3d* t1,Physics::VecD3d* t2,P
 
     ret->debug();
 }
-/*
+
 //old
+void Physics::BendingEnergy::Ap(int l,Physics::VecD3d* t1,Physics::VecD3d* t2,Physics::VecD3d*t3,Physics::VecD3d* ret){
+    ret->zero();
+    int st=0,end=_bi->_connections->size();
+
+    if(l!=-1){
+        st=l-1;
+        end=l+2;
+    }
+
+    for(int jp=st;jp<end;jp++){
+        int j=fixIndex(jp,_bi->_connections);
+        int j1=fixIndex(jp+1,_bi->_connections);
+        auto bp=_bi->_bendingParameters->at(j);
+
+        auto tri=bp->_tri;
+
+        if(tri->_isObtuse){
+            double cte=2;
+            if(tri->_angles[tri->getVertexIndex(_bi)]<PI2){
+                cte=4;
+            }
+            double dA=deltaDelta(l,j,l,-1);
+            double dB=deltaDelta(l,j1,l,-1);
+            auto B=_bi->_bendingParameters->at(j1);
+            t1->setValues(bp->_dxP);
+            t1->cross(B->_dxP,t2);
+            double triA=t2->len()/2.0;
+            double A2=bp->_dxP->dot(bp->_dxP);
+            double B2=B->_dxP->dot(B->_dxP);
+            double AB=bp->_dxP->dot(B->_dxP);
+            for(int i=0;i<3;i++){
+                t3->_coords[i]=bp->_dxP->_coords[i]*B2*dA+B->_dxP->_coords[i]*A2*dB-AB*(B->_dxP->_coords[i]*dA+bp->_dxP->_coords[i]*dB);
+            }
+            t3->multConst(-1.0/(cte*4*triA));
+            ret->add(t3);
+        }else{
+            TP1(l,j,t1,t3);
+            t3->multConst(bp->_lsq);
+            t3->debug();
+            auto bp2=_bi->_bendingParameters->at(j);
+            TP2(l,j,t1,t2);
+            t2->multConst(bp2->_lsq);
+            t2->debug();
+            t3->add(t2);
+
+            LsqP(l,j,t1);
+            t1->multConst(bp->_cot1);
+            t1->debug();
+            t3->add(t1);
+
+            LsqP(l,j1,t1);
+            t1->multConst(bp->_cot2);
+            t1->debug();
+            t3->add(t1);
+            t3->multConst(1/8.0);
+            ret->add(t3);
+
+        }
+
+
+    }
+
+    ret->debug();
+}
 void Physics::BendingEnergy::Avp(int l,Physics::VecD3d* t1,Physics::VecD3d* t2,Physics::VecD3d*t3,Physics::VecD3d* ret){
     ret->zero();
     int st=0,end=_bi->_connections->size();
@@ -569,7 +686,7 @@ void Physics::BendingEnergy::Avp(int l,Physics::VecD3d* t1,Physics::VecD3d* t2,P
     ret->multConst(1/8.0);
     ret->debug();
 }
-*/
+
 void Physics::BendingEnergy::Hp(int l, VecD3d **tmps,Tensor2 **tn, VecD3d *ret){
     if(!_border){
         tn[0]->zero();
@@ -793,8 +910,12 @@ void Physics::BendingEnergy::H2p(int l, VecD3d **tmps,Tensor2 **tn, VecD3d *ret)
     //tmps[3] <-Avp
     LBp(l,tmps,ret);
     //ret->multConst(SIGN(_LBdotN));
-    Avp(l,tmps[0],tmps[1],tmps[2],tmps[3]);
+
+    Ap(l,tmps[0],tmps[1],tmps[2],tmps[3]);
+    //Avp(l,tmps[0],tmps[1],tmps[2],tmps[3]);
+
     tmps[2]->setValues(ret);
+
 
 
 
@@ -802,7 +923,7 @@ void Physics::BendingEnergy::H2p(int l, VecD3d **tmps,Tensor2 **tn, VecD3d *ret)
     tmps[0]->setValues(tmps[2]);
 
     //tmp[0]<- LBp*_AV (moshtaqe soorat dar makhraj
-    tmps[0]->multConst(_triA);
+    tmps[0]->multConst(_Av);
 
 
 
@@ -813,7 +934,7 @@ void Physics::BendingEnergy::H2p(int l, VecD3d **tmps,Tensor2 **tn, VecD3d *ret)
 
     tmps[0]->add(tmps[1]);
     //tmps[0] <- moshtaqe sorat*makhraj-moshtaqe makhraj dar soorat
-    tmps[0]->multConst( HH0*_SIGN/(2*_triA));
+    tmps[0]->multConst( HH0*_SIGN/(2*_Av));
     //tmps[0] <- moshtaqe (sorat*makhraj-moshtaqe makhraj dar soorat)*(H-H0)*Av/(makhraj^2)
     ret->setValues(tmps[0]);
 
@@ -822,6 +943,7 @@ void Physics::BendingEnergy::H2p(int l, VecD3d **tmps,Tensor2 **tn, VecD3d *ret)
 
     tmps[3]->multConst(HH0*HH0);
     ret->add(tmps[3]);
+
 
 
 }

@@ -7,6 +7,8 @@
 #include <QFile>
 #include <QVector>
 #include <QString>
+#define PI 3.14159265359
+#define PI2 1.57079632679
 /*
 
 
