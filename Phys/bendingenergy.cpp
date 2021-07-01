@@ -117,7 +117,7 @@ void Physics::BendingEnergy::updateBendingParameters(){
     _v2->zero();
     _LB->zero();
     _Av=0;
-    _triA=0;
+
     double Av2=0;
     for(int j=0;j<size;j++){
 
@@ -138,7 +138,7 @@ void Physics::BendingEnergy::updateBendingParameters(){
         _temp1->setValues(param->_dxP);
         _temp1->cross(paramp->_dxP,_temp2);
         param->_triA=_temp2->len()/2.0;
-        _triA+=param->_triA;
+
         double chi1=getChi(j,jp1), chi2=getChi(j,jp2);
         if(chi1*chi1>=1){
             std::cout<<chi1<<"\t"<<chi2<<"\t"<<_border<<std::endl;
@@ -387,7 +387,7 @@ void Physics::BendingEnergy::TP(int l,int j,Physics::VecD3d *temp,Physics::VecD3
 void Physics::BendingEnergy::TP1(int l,int j,Physics::VecD3d *temp,Physics::VecD3d *ret){
     auto bp= _bi->_bendingParameters->at(j);
 
-    double t1=(1-bp->chiM*bp->chiM);
+    double t1=(1-bp->chiP*bp->chiP);
     assert(t1>0);
     t1=std::sqrt(t1*t1*t1);
     chiP(l,j,fixIndex(j+1,_bi->_connections),temp,ret);
@@ -398,12 +398,13 @@ void Physics::BendingEnergy::TP1(int l,int j,Physics::VecD3d *temp,Physics::VecD
 }
 
 void Physics::BendingEnergy::TP2(int l,int j,Physics::VecD3d *temp,Physics::VecD3d *ret){
-    auto bp= _bi->_bendingParameters->at(j);
+    int jp=fixIndex(j+1,_bi->_connections);
+    auto bp= _bi->_bendingParameters->at(jp);
 
     double t1=(1-bp->chiM*bp->chiM);
     assert(t1>0);
     t1=std::sqrt(t1*t1*t1);
-    chiP(l,fixIndex(j+1,_bi->_connections),j,temp,ret);
+    chiP(l,jp,j,temp,ret);
     ret->multConst(1.0/t1);
     ret->debug();
 

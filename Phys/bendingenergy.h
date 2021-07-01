@@ -18,7 +18,7 @@ private:
 
     VecD3d *_temps[4];
     Tensor2 *_tempT[4];
-    double _Avs,_triA;
+    double _Avs;
     double _SIGN;
     double _A0,_absA,_absAs,_LBdotN;
     Physics::VecD3d *_v1,*_v2,*_LB,*_temp1,*_temp2,*_temp3,*_AvP,*_A;

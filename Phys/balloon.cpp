@@ -1,5 +1,5 @@
 #include "balloon.h"
-#define _P 1
+#define _P 2
 #define _K 0
 #define _kappa 10
 
@@ -7,8 +7,8 @@ Physics::Balloon::Balloon(double dt):SurfaceWithPhysics(),_dt(dt)
 {
     _rand=_rand=QRandomGenerator::global();
     _dt*=1e-6;
-    //_sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_2.obj)"));
-    _sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.obj)"));
+    _sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_2.obj)"));
+    //_sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.obj)"));
     double el=0;
     for(int i=0;i<_sphere->_edges->size();i++){
         auto e=_sphere->_edges->at(i);
@@ -104,6 +104,7 @@ void Physics::Balloon::update(){
 
 
         _temp->setValues(be->_n);
+        _temp->nomilize();
         _temp->multConst(p*be->_Av);
         b->_force->add(_temp);
 
