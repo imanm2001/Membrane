@@ -1,5 +1,5 @@
 #include "balloon.h"
-#define _P 1
+#define _P 0
 #define _K 0
 #define _kappa 10
 
@@ -79,7 +79,7 @@ void Physics::Balloon::update(){
     }else{
         _dt=(1e-8-2.5e-7)*std::exp(-(_step-40000)/40000.0)+2.5e-7;
     }
-    //_dt=1e-7;
+    _dt=1e-6;
     //double p=_step<100000?50:(50-_P)*std::exp(-(_step-100000)/100000.0)+_P;
     double p=_P;
     double kappa=_kappa*(1-std::exp(-_step/10.0));

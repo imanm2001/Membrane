@@ -151,7 +151,7 @@ void Physics::BendingEnergy::updateBendingParameters(){
 */
         param->chiP=chi1;
         param->chiM=chi2;
-        param->_cot1=chi1/std::sqrt(1-chi1*chi1);
+        param->_cot1=chi1/std::sqrt(1-chi2*chi2);
         double cos2=getChi(jp1,j);
         param->_cot2=cos2/std::sqrt(1-cos2*cos2);
         param->_T=param->_cot1+chi2/std::sqrt(1-chi2*chi2);
@@ -165,7 +165,7 @@ void Physics::BendingEnergy::updateBendingParameters(){
 
         auto tri=param->_tri;
 
-        if(tri->_isObtuse){
+        if(0&&tri->_isObtuse){
             if(tri->_angles[tri->getVertexIndex(_bi)]<PI2){
                 _Av+=param->_triA/4.0;
             }else{
@@ -174,9 +174,9 @@ void Physics::BendingEnergy::updateBendingParameters(){
         }else{
             double t=(param->_lsq*param->_cot1+paramp->_lsq*param->_cot2)/8.0;
             if(t<0){
-                std::cout<<chi1<<"__\t"<<cos2<<std::endl;
+              //  std::cout<<chi1<<"__\t"<<cos2<<std::endl;
             }
-            assert(t>0);
+            //assert(t>0);
             _Av+=t;
         }
 
@@ -613,13 +613,13 @@ void Physics::BendingEnergy::Ap(int l,Physics::VecD3d* t1,Physics::VecD3d* t2,Ph
 
         auto tri=bp->_tri;
 
-        if(tri->_isObtuse){
+        if(0&&tri->_isObtuse){
             double cte=2;
             if(tri->_angles[tri->getVertexIndex(_bi)]<PI2){
                 cte=4;
             }
-            double dA=deltaDelta(l,j,l,-1);
-            double dB=deltaDelta(l,j1,l,-1);
+            double dA=deltaDelta(l,-1,l,j);
+            double dB=deltaDelta(l,-1,l,j1);
             auto B=_bi->_bendingParameters->at(j1);
             t1->setValues(bp->_dxP);
             t1->cross(B->_dxP,t2);
