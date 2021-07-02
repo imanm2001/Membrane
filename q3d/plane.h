@@ -24,7 +24,7 @@ class Plane: public QObject {
 private:
 
     double _dw,_dh;
-    QVector<QSharedPointer<Physics::VecD3d>> _normals;
+    QVector<Physics::VecD3d*> *_normals;
     float _triPoses[9];
 
     QRandomGenerator* _rand;

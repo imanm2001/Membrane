@@ -5,6 +5,7 @@ Geometry::WaveFrontObj::WaveFrontObj(QString path)
     _tris=new QVector<Triangle*>();
     _beads=new QVector<Physics::BeadInfo*>();
     _edges=new QVector<Geometry::Edge*>();
+    _normals=new QVector<Physics::VecD3d*>();
 
     _mesh = new Qt3DRender::QGeometryRenderer;
     Qt3DRender::QGeometry *customGeometry = new Qt3DRender::QGeometry(_mesh);
@@ -97,7 +98,7 @@ void Geometry::WaveFrontObj::updateVertecies(){
     for(int i=0;i<_beads->size();i++){
         auto b=_beads->at(i);
         auto v=b->_coords->_coords;
-        auto n=_normals.at(b->ID);
+        auto n=_normals->at(b->ID);
         positions[i*9+0]=v[0]/3.0;
         positions[i*9+1]=v[1]/3.0;
         positions[i*9+2]=v[2]/3.0;
@@ -116,21 +117,23 @@ void Geometry::WaveFrontObj::updateVertecies(){
 }
 void Geometry::WaveFrontObj::updateNormals(){
 
-    for(auto v:_normals){
+    for(int i=0;i<_normals->size();i++){
+        auto v=_normals->at(i);
         v->zero();
     }
 
-    for(int i=_normals.size();i<_beads->size();i++){
-        _normals.append(QSharedPointer<Physics::VecD3d>(new Physics::VecD3d()));
+    for(int i=_normals->size();i<_beads->size();i++){
+        _normals->append(new Physics::VecD3d());
     }
     for(int i=0;i<_tris->size();i++){
         auto tri=_tris->at(i);
         auto norm=tri->_norm;
-        _normals[tri->_v[0]->ID]->add(norm);
-        _normals[tri->_v[1]->ID]->add(norm);
-        _normals[tri->_v[2]->ID]->add(norm);
+        _normals->at(tri->_v[0]->ID)->add(norm);
+        _normals->at(tri->_v[1]->ID)->add(norm);
+        _normals->at(tri->_v[2]->ID)->add(norm);
     }
-    for(auto v:_normals){
+    for(int i=0;i<_normals->size();i++){
+        auto v=_normals->at(i);
         v->nomilize();
     }
 }

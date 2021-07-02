@@ -31,7 +31,7 @@ QT_END_NAMESPACE
 class Geometry::WaveFrontObj:public QObject
 {
 public:
-    QVector<QSharedPointer<Physics::VecD3d>> _normals;
+    QVector<Physics::VecD3d*> *_normals;
     WaveFrontObj(QString path);
     Qt3DRender::QGeometryRenderer * _mesh;
     QVector<Geometry::Edge *>* _edges;

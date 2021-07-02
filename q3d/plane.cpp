@@ -312,20 +312,22 @@ void Geometry::Plane::updateIndecies(){
 }
 void Geometry::Plane::updateNormals(){
 
-    for(auto v:_normals){
+    for(int i=0;i<_normals->size();i++){
+        auto v=_normals->at(i);
         v->zero();
     }
 
-    for(int i=_normals.size();i<_beads->size();i++){
-        _normals.append(QSharedPointer<Physics::VecD3d>(new Physics::VecD3d()));
+    for(int i=_normals->size();i<_beads->size();i++){
+        _normals->append(new Physics::VecD3d());
     }
     for(auto tri:_tris){
         auto norm=tri->_norm;
-        _normals[tri->_v[0]->ID]->add(norm);
-        _normals[tri->_v[1]->ID]->add(norm);
-        _normals[tri->_v[2]->ID]->add(norm);
+        _normals->at(tri->_v[0]->ID)->add(norm);
+        _normals->at(tri->_v[1]->ID)->add(norm);
+        _normals->at(tri->_v[2]->ID)->add(norm);
     }
-    for(auto v:_normals){
+    for(int i=0;i<_normals->size();i++){
+        auto v=_normals->at(i);
         v->nomilize();
     }
 }
@@ -359,7 +361,7 @@ QByteArray bufferBytes=posBuff->data();
     for(int i=0;i<_beads->size();i++){
         auto b=_beads->at(i);
         auto v=b->_coords->_coords;
-        auto n=_normals.at(b->ID);
+        auto n=_normals->at(b->ID);
         positions[i*9+0]=v[0];
         positions[i*9+1]=v[1];
         positions[i*9+2]=v[2];

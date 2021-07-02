@@ -21,6 +21,8 @@ private:
     Physics::SpringForce *_sf;
     int _step;
     QRandomGenerator* _rand;
+    std::default_random_engine generator;
+    std::normal_distribution<double> distribution;
 public:
     double _l,_lsq,_totalA;
 

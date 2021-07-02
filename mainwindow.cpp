@@ -150,7 +150,7 @@ bool MainWindow::updateMembrane(){
         //        std::cout<<"2Mem"<<std::endl;
         if(_mutex.tryLock()){
 
-            for(int i=0;i<50;i++){
+            for(int i=0;i<200;i++){
 
                 //_memb->update();
                 ui->widget3D->_mesh->update();

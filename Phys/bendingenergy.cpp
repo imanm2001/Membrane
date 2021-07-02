@@ -234,6 +234,7 @@ void Physics::BendingEnergy::updateBendingParameters(){
 
     //_Av=_triA/3.0;
     _H=_SIGN*_LB->len()/(4*_Av);
+
     //_H= _LB->len()/(4*_Av);
     double delta=std::sqrt(_H*_H-Kg);
     //std::cout<<_H+delta<<"\t"<<_H-delta<<"\t"<<(_H*_H-Kg)/Kg<<std::endl;
