@@ -151,7 +151,7 @@ void Physics::BendingEnergy::updateBendingParameters(){
 */
         param->chiP=chi1;
         param->chiM=chi2;
-        param->_cot1=chi1/std::sqrt(1-chi2*chi2);
+        param->_cot1=chi1/std::sqrt(1-chi1*chi1);
         double cos2=getChi(jp1,j);
         param->_cot2=cos2/std::sqrt(1-cos2*cos2);
         param->_T=param->_cot1+chi2/std::sqrt(1-chi2*chi2);
@@ -165,7 +165,7 @@ void Physics::BendingEnergy::updateBendingParameters(){
 
         auto tri=param->_tri;
 
-        if(0&&tri->_isObtuse){
+        if(tri->_isObtuse){
             if(tri->_angles[tri->getVertexIndex(_bi)]<PI2){
                 _Av+=param->_triA/4.0;
             }else{
@@ -613,7 +613,7 @@ void Physics::BendingEnergy::Ap(int l,Physics::VecD3d* t1,Physics::VecD3d* t2,Ph
 
         auto tri=bp->_tri;
 
-        if(0&&tri->_isObtuse){
+        if(tri->_isObtuse){
             double cte=2;
             if(tri->_angles[tri->getVertexIndex(_bi)]<PI2){
                 cte=4;
@@ -630,13 +630,13 @@ void Physics::BendingEnergy::Ap(int l,Physics::VecD3d* t1,Physics::VecD3d* t2,Ph
             for(int i=0;i<3;i++){
                 t3->_coords[i]=bp->_dxP->_coords[i]*B2*dA+B->_dxP->_coords[i]*A2*dB-AB*(B->_dxP->_coords[i]*dA+bp->_dxP->_coords[i]*dB);
             }
-            t3->multConst(-1.0/(cte*4*triA));
+            t3->multConst(1.0/(cte*4*triA));
             ret->add(t3);
         }else{
             TP1(l,j,t1,t3);
             t3->multConst(bp->_lsq);
             t3->debug();
-            auto bp2=_bi->_bendingParameters->at(j);
+            auto bp2=_bi->_bendingParameters->at(j1);
             TP2(l,j,t1,t2);
             t2->multConst(bp2->_lsq);
             t2->debug();
@@ -912,9 +912,12 @@ void Physics::BendingEnergy::H2p(int l, VecD3d **tmps,Tensor2 **tn, VecD3d *ret)
     //tmps[3] <-Avp
     LBp(l,tmps,ret);
     //ret->multConst(SIGN(_LBdotN));
-
+    //std::cout<<"----"<<std::endl;
+    ///Avp(l,tmps[0],tmps[1],tmps[2],tmps[3]);
+    //tmps[3]->print();
     Ap(l,tmps[0],tmps[1],tmps[2],tmps[3]);
-    //Avp(l,tmps[0],tmps[1],tmps[2],tmps[3]);
+    //tmps[3]->print();
+
 
     tmps[2]->setValues(ret);
 
