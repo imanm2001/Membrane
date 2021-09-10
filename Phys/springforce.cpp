@@ -9,7 +9,9 @@ double Physics::SpringForce::eval(Geometry::Edge *e) {
     double dy=DR(e->_vid1,e->_vid2,1);
     double dz=DR(e->_vid1,e->_vid2,2);
     double dr=std::sqrt(dx*dx+dy*dy+dz*dz);
-    double k=_k*std::exp(3*std::fabs(e->_restLength-dr)/e->_restLength);
+    //double k=_k*std::exp(4*std::fabs(e->_restLength-dr)/e->_restLength);
+    double k=_k;
+
     dx*=k*(e->_restLength-dr)/dr;
     dy*=k*(e->_restLength-dr)/dr;
     dz*=k*(e->_restLength-dr)/dr;

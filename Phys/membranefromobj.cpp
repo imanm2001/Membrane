@@ -1,21 +1,26 @@
 #include "membranefromobj.h"
-#define _P 0
-#define _K 0.001
-#define _kappa 1234
+#define _P 1
+#define _K 1000
+#define _kappa 18522
 #define _T 0
 #define _E 2*_K/1.73205081
-#define _THRESHOLD 30
-#define _F 000
-Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt)
+#define _THRESHOLD 42
+#define _F 1352
+Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55)
 {
-
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r40_d30.obj)"));
+    _Rind=8;
+    _cb=nullptr;
+    _kappaFactor=1;
+    _radiusFactor=1;
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d50.obj)"));
+    //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_3scaled_smaller.obj)"));
     _tris=_disc->_tris;
     _scale=1e-5;
     _rand=_rand=QRandomGenerator::global();
     _border=new QVector<Geometry::BeadInfo*>();
     _xprofile=new QVector<Geometry::BeadInfo*>();
-    _beads=new QVector<Geometry::BeadInfo*>();
+    _beads=_disc->_beads;
+    _updatable=new QVector<Geometry::BeadInfo*>();
     SurfaceWithPhysics::_shape=new QString("Disc");
 
     //_sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\hex.obj)"));
@@ -24,37 +29,48 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     for(int i=0;i<_disc->_tris->size();i++){
         auto tri=_disc->_tris->at(i);
         if(tri->getLocation()->len()>_THRESHOLD){
-            tri->_curvater=0;
+            tri->_curvater=1;
         }else{
             tri->_curvater=1;
         }
     }
     _temp=new Physics::VecD3d();
+    _temp2=new Physics::VecD3d();
+    double mRdis=0;
     for(int i=0;i<_disc->_beads->size();i++){
         auto b=_disc->_beads->at(i);
-        BendingEnergy *be=new BendingEnergy(b);
-        be->orderConnections();
-
         if(fabs(b->_coords->_coords[2])<1e-3){
+            double l=b->_coords->_coords[0];
+            if(_xprofile->size()==0||std::fabs(l-_THRESHOLD)<std::fabs(mRdis-_THRESHOLD)){
+                _Rind=_xprofile->size();
+                mRdis=l;
+            }
             _xprofile->append(b);
             if(fabs(b->_coords->_coords[0])<1e-3){
                 _cb=b;
             }
         }
 
-        b->_coords->_coords[0]+=1e-1*(_rand->generateDouble()-0.5);
-        b->_coords->_coords[1]+=1e-1*(_rand->generateDouble()-0.5);
-        b->_coords->_coords[2]+=1e-1*(_rand->generateDouble()-0.5);
+        b->_coords->_coords[0]+=1e-4*(_rand->generateDouble()-0.5);
+        b->_coords->_coords[1]+=1e-4*(_rand->generateDouble()-0.5);
+        b->_coords->_coords[2]+=1e-4*(_rand->generateDouble()-0.5);
 
     }
     _initalArea=0;
+    _APV=0;
+    updateTris();
+     _TIE=0;
+     int N=0;
     for(int i=0;i<_disc->_beads->size();i++){
         auto b=_disc->_beads->at(i);
         BendingEnergy *be=new BendingEnergy(b);
 
         be->orderConnections();
         be->updateBendingParameters();
-
+        be->_curv=0.048;
+        if(b->_coords->len()<_THRESHOLD){
+            _TIE+=_kappa*be->calE();
+        }
         double r=b->_coords->len();
 
         if(b->getAttribute(BORDER)!=nullptr){
@@ -62,155 +78,257 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
             be->_border=true;
         }else {
             if(r<_THRESHOLD){
+                N++;
                 _initalArea+=be->_Av;
                 double d=r/_THRESHOLD;
                 //b->_coords->_coords[1]=10*(1-d*d);
             }
 
-            _beads->append(b);
+            _updatable->append(b);
         }
-
+    _APV=_initalArea/(double)N;
 
     }
     std::cout<<"TOTAL::"<<_initalArea<<std::endl;
-    _sf=new SpringForce(_K);
-    _tet=new Tether(_K);
+    //    _sf=new SpringForce(_K);
+    _sf=new SpringForce(10000);
+    _tet=new Tether(100000);
     _step=0;
 
     SurfaceWithPhysics::_title=new QString(QString("%1_%2_%3_%4").arg(QString::number(_P),QString::number(_K),QString::number(_kappa),QString::number(_F)));
-    loadFromFile();
+    _frad=1;
     for(int i=0;i<_border->size();i++){
         auto b=_border->at(i);
+        double l=b->_coords->len();
+        if(i==0||l>_frad){
+            _frad=l;
+        }
         //b->_coords->multConst(10.0/b->_coords->len());
     }
-    for(int i=0;i<_disc->_beads->size();i++){
-        auto b=_disc->_beads->at(i);
-        BendingEnergy *be=new BendingEnergy(b);
-        if(b->_coords->len()<_THRESHOLD){
-            be->_curv=1;
-        }else{
-            be->_curv=0;
-        }
-        be->orderConnections();
-        be->updateBendingParameters();
-    }
+
+
+
     _pBE=0;
     allocMem();
     std::cout<<volumne()<<std::endl;
+ loadFromFile();
+ auto bb=_xprofile->at(8);
+ _kappaFactor=bb->_coords->_coords[0]/2;
+ _kappaFactor=2*_P*_kappaFactor*_kappaFactor*_kappaFactor/_kappa;
+ _radiusFactor=(bb->_coords->_coords[0]-1e-2)/_THRESHOLD;
+_radiusFactor=1;
+ std::cout<<"---"<<_kappaFactor<<"\t"<<_radiusFactor<<std::endl;
+    for(int i=0;i<_disc->_beads->size();i++){
+        auto b=_disc->_beads->at(i);
+        BendingEnergy *be=new BendingEnergy(b);
+        be->orderConnections();
+        be->updateBendingParameters();
+
+    }
+
+    std::cout<<_TIE<<std::endl;
 }
 
 void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,double P,double kappa,double dt){
     double tA=0;
+    double BE=0,SE=0;
+    for(int i=0;i<_disc->_beads->size();i++){
+        auto b=_disc->_beads->at(i);
+
+        BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
+        double l=b->_coords->len();
+        be->_curv=0.0;
+        if( l<_THRESHOLD*_radiusFactor ){
+            //be->_curv=0.048*(1-std::exp(-(_step-0)/1000.0));
+            be->_curv=0.048;
+            //be->_curv=0.0;
+        }else{
+          //  be->_curv=std::fmax(0.0,0.048*(1-(l-_THRESHOLD)/4));
+            be->_curv=0.048;
+        }
+        be->orderConnections();
+        be->updateBendingParameters();
+
+    }
+
+    double totalBE=0;
     for(int i=0;i<_disc->_beads->size();i++){
         auto b=_disc->_beads->at(i);
         BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
         double l=b->_coords->len();
-        if(l<_THRESHOLD+2){
-            _temp->zero();
-            if( l<_THRESHOLD){
-                be->_curv=0.067*(1-std::exp((_step-0)/100.0));
-                be->_curv=0.033;
+        _temp->zero();
+        if(l<_THRESHOLD*_radiusFactor){
 
-            }else{
-                be->_curv=0.0;
-            }
+
+            //be->_curv=0.0;
             be->Ep2(-1,_temp);
-            _temp->multConst(-kappa);
+            if(l>_THRESHOLD*_radiusFactor){
+                _temp->multConst(-0*kappa);
+            }else{
+                _temp->multConst(-_kappa*_kappaFactor);
+            }
 
             //    _temp->print();
             b->_force->add(_temp);
+            BE+=kappa*be->calE();
+            //BE+=kappa*be->calcSig();
         }
-
-        //be->orderConnections();
-        be->updateBendingParameters();
     }
-    double totalBE=0;
+
+
+
     int N=0;
-
-    for(int i=0;i<beads->size();i++){
-        auto b=beads->at(i);
-        BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
-
-
-
-
-        if(b->_coords->len()<_THRESHOLD){
-            _temp->setValues(be->_n);
-            _temp->multConst((-P+1)*be->_Av);
-            b->_force->add(_temp);
-            tA+=be->_Av;
-            N++;
-            totalBE+=_kappa*be->calE();
-        }
-
-
-    }
-
-
-
     for(int i=0;i<_disc->_edges->size();i++){
         auto edge=_disc->_edges->at(i);
         edge->location(_temp);
         double r=_temp->len();
+        double e=_sf->eval(edge);
+        //SE+=e;
 
-        if(r<_THRESHOLD){
+        if(r<_THRESHOLD*_radiusFactor){
             BendingEnergy *be=(BendingEnergy *)edge->_vid1->getAttribute(BENDINGENERGY);
             double a=be->_Av;
             be=(BendingEnergy *)edge->_vid2->getAttribute(BENDINGENERGY);
+
             a+=be->_Av;
-            totalBE+=_tet->calE(edge);
+
+        }else{
+            // edge->_vid1->_force->zero();
+            //edge->_vid2->_force->zero();
         }
 
-        _tet->eval(edge);
 
-        //double e=_sf->eval(edge);
+
         //if(edge->_vid1->_coords->len()<_THRESHOLD||edge->_vid2->_coords->len()<_THRESHOLD){
-        //  totalBE+=e;
+        //
         //}
     }
+    N=beads->size();
 
-    _cb->_force->_coords[1]+=_F+1000;
+    for(int i=0;i<beads->size();i++){
+        auto b=beads->at(i);
+        BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
+        double l=b->_coords->len();
+
+
+
+        if(l<_THRESHOLD*_radiusFactor){
+            _temp->setValues(be->_n);
+            _temp->nomilize();
+            _temp->multConst(-(_P)*be->_Av);
+
+            b->_force->add(_temp);
+            tA+=be->_Av;
+
+            //totalBE+=_kappa*be->calE();
+        }else{
+               b->_force->_coords[1]=-100*b->_coords->_coords[1];
+        }
+
+
+    }
+
+
+
+
+    if(_cb!=nullptr){
+        //_cb->_force->_coords[1]+=std::fmin(_F,_appliedF);
+        auto be=(BendingEnergy *)_cb->getAttribute(BENDINGENERGY);
+
+        _cb->_force->_coords[1]+=_appliedF;
+        _cb->_force->_coords[0]+=-1*_cb->_coords->_coords[0];
+        _cb->_force->_coords[2]+=-1*_cb->_coords->_coords[2];
+         //std::cout<<_APV/be->_Av<<"\t"<<std::endl;
+        //_cb->_force->_coords[0]=0;
+        //_cb->_force->_coords[2]=0;
+    }
+    //for(int i=0;i<_disc->_beads->size();i++){
+    //  auto b=_disc->_beads->at(i);
+
+    //_cfy=_cb->_force->_coords[1];
+    _temp->zero();
+    _temp2->zero();
+    double ten=0,ten2=0;
     for(int i=0;i<beads->size();i++){
         auto b=beads->at(i);
         double r=b->_coords->len();
-        if(r>_THRESHOLD){
+        if(b!=_cb&&r<_THRESHOLD*_radiusFactor){
+            _temp2->setValues(b->_coords);
+            _temp2->nomilize();
+            auto be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
+            double d=be->_n->dot(_temp2);
+            _temp->setValues(be->_n);
+            _temp->nomilize();
 
-            b->_force->_coords[1]=-0.1*b->_coords->_coords[1];
-            b->_force->_coords[1]=0;
-
-        }else{
+            _temp->multConst(d);
+            _temp2->sub(_temp);
+            _temp2->nomilize();
+            ten+=_temp2->dot(b->_force)/be->_Av;
+            ten2+=_E*(_sf->_k/_K)*(be->_Av-_APV)/_APV;
 
         }
         b->update(dt);
 
+
 #if _T>0
         double dts=std::sqrt(dt);
-        b->_coords->_coords[0]+=1e0*(_rand->generateDouble()-0.5)*_T*dts;
-        b->_coords->_coords[1]+=1e0*(_rand->generateDouble()-0.5)*_T*dts;
-        b->_coords->_coords[2]+=1e0*(_rand->generateDouble()-0.5)*_T*dts;
+        b->_coords->_coords[0]+=1e-1*(_rand->generateDouble()-0.5)*_T*dts;
+        b->_coords->_coords[1]+=1e-1*(_rand->generateDouble()-0.5)*_T*dts;
+        b->_coords->_coords[2]+=1e-1*(_rand->generateDouble()-0.5)*_T*dts;
 #endif
     }
-    /*
+    double minF=0;
+    if(_step%100==0){
+        std::cout<<ten<<"\t"<<ten2<<std::endl;
+    }
+    _temp->zero();
     for(int i=0;i<_border->size();i++){
         auto b=_border->at(i);
         double r=b->_coords->len();
         b->_force->_coords[1]=0;
-        b->_force->_coords[2]=1*(100-r)*b->_coords->_coords[2]/r;
-        b->_force->_coords[0]=1*(100-r)*b->_coords->_coords[0]/r;
+        if(r>48){
+            double f=b->_force->len();
+            minF=std::fmax(f,minF);
+            b->_force->_coords[2]+=10000*(_frad-r)*b->_coords->_coords[2]/r;
+            b->_force->_coords[0]+=10000*(_frad-r)*b->_coords->_coords[0]/r;
 
+           // b->_coords->_coords[0]=b->_coords->_coords[0]*_frad/r;
+           // b->_coords->_coords[2]=b->_coords->_coords[2]*_frad/r;
 
-        b->update(dt);
-
-    }*/
+            //;
+            // if(f>100){
+            //   if(std::fabs(_tension)>0.042){
+            b->update(dt);
+            //  }
+        }
+    }
+    //   std::cout<<minF<<std::endl;
     //    std::cout<<tA<<std::endl;
     //    _tension=_E*(tA-296.397)/296.397;
     //_tension=_E*(tA-_initalArea)/_initalArea;
-    totalBE-=3*volumne()*_P;
-    totalBE-=_F*_cb->_coords->_coords[1]*1;
-    _tension=(totalBE-_pBE)/(tA-_initalArea);
-    _tension=(totalBE)/(2*_initalArea);
+    //TENP
+    //std::cout<<(_sf->_k/_K)*_E*(tA-_initalArea)<<"\t"<<BE<<"\t"<<volumne()*_P<<"\t"<<_F*_cb->_coords->_coords[1]<<"\t"<<N<<std::endl;
+
+    if(_cb!=nullptr){
+
+        totalBE=(-(-_F*_cb->_coords->_coords[1]+volumne()*_P));
+    }
+    // _tension=(_TIE-4*(_sf->_k/_K)*_E*(tA-_initalArea))/(2*_initalArea);
+    _tension=-(0.5*(-_TIE+BE)-totalBE+0*(_sf->_k/_K)*_E*(tA-_initalArea))/((_THRESHOLD*_radiusFactor)*(tA-_initalArea));
+    //  std::cout<<tA-_initalArea<<std::endl;
+    // _tension=(totalBE-_pBE)/(tA-_initalArea);
+    // std::cout<<_tension<<std::endl;
+    // _tension=(totalBE-3*N)/(2*_initalArea);
+    /*
+    if(_tension>1e-4){
+        _sf->_k/=10;
+    }
+    if(_tension<1e-5){
+        _sf->_k*=10;
+    }
+*/
     _pBE=totalBE;
-    //_initalArea=tA;
+    //    _initalArea=tA;
 
 
 }
@@ -218,18 +336,72 @@ void Physics::MembraneFromObj::update(){
 
     double p=_P;
     double kappa=_kappa;
-    //_sf->_k=_K*(1-std::exp(-_step/2000.0));
-    _tet->_k =_K;
-    updateTris();
-    for(int i=0;i<5;i++){
-
-        updateBeads(_beads,p,kappa,1e-7);
+    //_tet->_scale=0.2*std::exp(-_step/100.0)+0.9;
+    _tet->_scale=1.1;
+    //_tet->_k=_K*std::exp(-_step/1000.0)+0.01;
+    _tet->_k =10000;
+    // _sf->_k=100.0;
+    /*  for(int i=0;i<_disc->_tris->size();i++){
+        _disc->_tris->at(i)->getNormal();
+    }*/
+    for(int i=0;i<1;i++){
+        updateTris();
+        updateBeads(_updatable,p,kappa,1e-6);
     }
+     auto bb=_xprofile->at(_Rind);
+    _radiusFactor=((bb->_coords->_coords[0]-1e-2)/_THRESHOLD);//*(1-std::exp(-_step/2000.0))+1;
     if(_step%1000==0||_capture){
-            capture();
-        _cb->_coords->print();
-        std::cout<<_tension<<std::endl;
-        std::cout<<volumne()<<std::endl;
+        capture();
+        int mRdis=0;
+        for(int i=0;i<_xprofile->size();i++){
+            auto b=_xprofile->at(i);
+            double l=b->_coords->_coords[0];
+            if(i==0||std::fabs(l-_THRESHOLD)<std::fabs(mRdis-_THRESHOLD)){
+                _Rind=i;
+                mRdis=l;
+            }
+        }
+
+        _kappaFactor=mRdis/2;
+
+        _kappaFactor=2*_P*_kappaFactor*_kappaFactor*_kappaFactor/_kappa;
+
+        if(_cb!=nullptr){
+            if(std::fabs(_cb->_coords->_coords[1]-_py)<0.01 && _tension>1e-5){
+                //_sf->_k*=0.99;
+            }
+            _cb->_coords->print();
+            if(_cb->_coords->_coords[1]-_py<1&&_appliedF<_F){
+                _appliedF+=10;
+                _appliedF=std::fmin(_appliedF,_F);
+            }
+            if(_step>1000&&std::fabs((_tension-_ptension))<1e-3&&std::fabs(_cb->_coords->_coords[1]-_py)<1e-4){
+                if(_tension>1){
+                       _frad*=0.999;
+                }else if(_tension<0){
+                    //   _frad*=1.001;
+                }
+            }
+            _ptension=_tension;
+
+
+            if(_cb->_coords->_coords[1]<-1e-1&&_sf->_k>1&&_cb->_coords->_coords[1]-_py<0.1){
+                //   _sf->_k-=10;
+            }
+            auto be=(BendingEnergy *)_cb->getAttribute(BENDINGENERGY);
+
+        }
+        /*
+        if(_tension>1e-4){
+            _sf->_k=std::fmin(500,_sf->_k/10);
+        }
+        if(_tension<1e-5){
+            _sf->_k=std::fmax(5000,_sf->_k*10);
+        }*/
+        _py=_cb->_coords->_coords[1];
+        std::cout<<"TEN:"<<_tension<<"\t"<<_initalArea<<std::endl;
+        std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_kappaFactor<<"\t"<<bb->_coords->_coords[0]<<"\t"<<_Rind<<std::endl;
+        std::cout<<"STEP:"<<_step<<std::endl;
         std::cout.flush();
     }
     //std::exit(-1);
@@ -251,7 +423,7 @@ Qt3DRender::QGeometryRenderer* Physics::MembraneFromObj::mesh(){
 }
 void Physics::MembraneFromObj::capture(){
     SurfaceWithPhysics::capture();
-    auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape\Shape_%1_profile_%2.txt)").arg(*_shape,*_title);
+    auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_profile_%2.txt)").arg(*_shape,*_title);
 
     auto file=new QFile(s);
 
@@ -279,7 +451,7 @@ double Physics::MembraneFromObj::calE(int i){
 
     auto b=_beads->at(i);
     double l=b->_coords->len();
-    if(l<_THRESHOLD+1){
+    if(l<_THRESHOLD+5){
         BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
 
         //be->orderConnections();
@@ -309,14 +481,14 @@ double Physics::MembraneFromObj::calE(int i){
 
 
     for(int i=0;i<_disc->_edges->size();i++){
-        ret+=_tet->calE(_disc->_edges->at(i));
+        //        ret+=_tet->calE(_disc->_edges->at(i));
     }
     for(int i=0;i<_tris->size();i++){
         auto tri=_tris->at(i);
         double min=100,max=-1;
         for(int j=0;j<3;j++){
             double l=tri->_v[j]->_coords->len();
-            min=fmin(min,l);
+            min=(min,l);
             max=fmax(max,l);
         }
         if(min>_THRESHOLD){

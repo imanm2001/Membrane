@@ -86,8 +86,8 @@ void Q3dWidget::init(){
 
 
 
-//    _mesh=new Physics::MembraneFromObj(1e-1);
-    _mesh=new Physics::Balloon(1e-1);
+    _mesh=new Physics::MembraneFromObj(1e-1);
+    //_mesh=new Physics::Balloon(1e-1);
 
     // Camera
     //    camera->lens()->setPerspectiveProjection(45.0f, 16.0f/9.0f, 0.1f, 1000.0f);

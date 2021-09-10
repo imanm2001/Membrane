@@ -27,8 +27,10 @@ protected:
     double _scale,_oldE;
     double _KBTN;
     void writeBeadCoordinates(QVector<Geometry::BeadInfo*> *beads,QTextStream *out){
+        out->setRealNumberPrecision(16);
         for(int i=0;i<beads->size();i++){
             auto b=beads->at(i);
+
             out->operator<<(b->_coords->_coords[0]);
             out->operator<<("\t");
             out->operator<<(b->_coords->_coords[1]);
@@ -40,7 +42,7 @@ protected:
     }
     void loadFromFile(){
 
-        auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape\Shape_%1_%2.txt)").arg(*_shape, *_title);
+        auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
         auto f=new QFile(s);
         if(f->exists()&&f->open(QIODevice::ReadOnly | QIODevice::Text)){
 
@@ -75,8 +77,9 @@ protected:
         if(!error){
         //auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape\Shape_force_%1.txt)").arg(QUuid::createUuid().toString());
         //auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape\Shape_force_%1_%2.txt)").arg(QString::number(force),QUuid::createUuid().toString());
-        auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape\Shape_%1_%2.txt)").arg(*_shape, *_title);
-        auto bak=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape\Shape_%1_%2_bak.txt)").arg(*_shape,*_title);
+        auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
+        std::cout<<s.toStdString()<<std::endl;
+        auto bak=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2_bak.txt)").arg(*_shape,*_title);
 
 
 

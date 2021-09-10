@@ -1,3 +1,4 @@
+
 #include "bendingparameters.h"
 
 Physics::BendingParameters::BendingParameters(Geometry::BeadInfo *bi):_bi(bi)
@@ -9,6 +10,7 @@ Physics::BendingParameters::BendingParameters(Geometry::BeadInfo *bi):_bi(bi)
     _normal=nullptr;
     _lsq=_T=_l=0;
     _phi=chiM=chiP=0;
+    _tri=nullptr;
 
 }
 

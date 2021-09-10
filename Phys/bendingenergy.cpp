@@ -134,6 +134,9 @@ void Physics::BendingEnergy::updateBendingParameters(){
 
         auto e=_bi->_connections->at(j);
         auto param=_bi->_bendingParameters->at(j);
+        if(param->_tri==nullptr){
+            continue;
+        }
         auto paramp=_bi->_bendingParameters->at(jp1);
         _temp1->setValues(param->_dxP);
         _temp1->cross(paramp->_dxP,_temp2);
@@ -183,6 +186,7 @@ void Physics::BendingEnergy::updateBendingParameters(){
 //        _Av+=param->_lsq*param->_T;
 
     }
+
     //_Av=_Av/8.0;
     //Av2/=8.0;
 
@@ -232,6 +236,8 @@ void Physics::BendingEnergy::updateBendingParameters(){
 
 
 
+
+
     //_Av=_triA/3.0;
     _H=_SIGN*_LB->len()/(4*_Av);
 
@@ -239,7 +245,7 @@ void Physics::BendingEnergy::updateBendingParameters(){
     double delta=std::sqrt(_H*_H-Kg);
     //std::cout<<_H+delta<<"\t"<<_H-delta<<"\t"<<(_H*_H-Kg)/Kg<<std::endl;
     //_H=3*_LB->len()/(4*_triA);
-    Avp(-1,_temp1,_temp2,_temp3,_AvP);
+    //Avp(-1,_temp1,_temp2,_temp3,_AvP);
 
 }
 
@@ -331,19 +337,19 @@ void Physics::BendingEnergy::orderConnections(){
         }
         assert(index==(_bi->_connections->size()));
         if(numnull==2){
-            _curv=0;
+
             if(!_border){
                 _bi->setAttribute(BORDER,(QObject*) new Geometry::QBoolean(true));
                 _border=true;
             }
         }else{
-            _curv=tri->_curvater;
+//            _curv=tri->_curvater;
             ;
             //_curv/=_bi->_connections->size();
         }
     }else{
         assert(0);
-        _curv=0;
+
         if(!_border){
             _bi->setAttribute(BORDER,(QObject*) new Geometry::QBoolean(true));
             _border=true;
@@ -931,7 +937,6 @@ void Physics::BendingEnergy::H2p(int l, VecD3d **tmps,Tensor2 **tn, VecD3d *ret)
     tmps[0]->multConst(_Av);
 
 
-
     //tmps[1] <- Avp
     tmps[1]->setValues(tmps[3]);
     //tmps[1] <- -LB*Avp (-moshtaqe makhraj dar soorat)
@@ -939,7 +944,7 @@ void Physics::BendingEnergy::H2p(int l, VecD3d **tmps,Tensor2 **tn, VecD3d *ret)
 
     tmps[0]->add(tmps[1]);
     //tmps[0] <- moshtaqe sorat*makhraj-moshtaqe makhraj dar soorat
-    tmps[0]->multConst( HH0*_SIGN/(2*_Av));
+    tmps[0]->multConst(_SIGN*HH0/(2*_Av));
     //tmps[0] <- moshtaqe (sorat*makhraj-moshtaqe makhraj dar soorat)*(H-H0)*Av/(makhraj^2)
     ret->setValues(tmps[0]);
 
@@ -947,7 +952,7 @@ void Physics::BendingEnergy::H2p(int l, VecD3d **tmps,Tensor2 **tn, VecD3d *ret)
     //Derivative of surface
 
     tmps[3]->multConst(HH0*HH0);
-    ret->add(tmps[3]);
+   ret->add(tmps[3]);
 
 
 
@@ -1095,3 +1100,12 @@ double Physics::BendingEnergy::calE(){
     ret*=2*_Av;
     return ret;
 }
+double Physics::BendingEnergy::calcSig(){
+    double ret=0;
+    ret=-2*_H*_curv+_curv*_curv;
+
+
+    ret*=_Av;
+    return ret;
+}
+

@@ -1,7 +1,7 @@
 #include "balloon.h"
-#define _P 0
-#define _K 0.1
-#define _kappa 10
+#define _P 0.1
+#define _K 0.0
+#define _kappa 1
 
 Physics::Balloon::Balloon(double dt):SurfaceWithPhysics(),_dt(dt)
 {
@@ -9,7 +9,7 @@ Physics::Balloon::Balloon(double dt):SurfaceWithPhysics(),_dt(dt)
     distribution=std::normal_distribution<double>(0.0,1.0);
     _rand=_rand=QRandomGenerator::global();
     _dt*=1e-6;
-    _sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1.obj)"));
+    _sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.15.obj)"));
     //_sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.obj)"));
     double el=0;
     for(int i=0;i<_sphere->_edges->size();i++){
@@ -23,7 +23,7 @@ Physics::Balloon::Balloon(double dt):SurfaceWithPhysics(),_dt(dt)
     //_sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\cap.obj)"));
     //_sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\pyramid.obj)"));
     for(int i=0;i<_sphere->_tris->size();i++){
-        _sphere->_tris->at(i)->_curvater=1/1.0;
+        _sphere->_tris->at(i)->_curvater=1/1.5;
     }
     _temp=new Physics::VecD3d();
 
@@ -59,7 +59,7 @@ void Physics::Balloon::update(){
         auto b=_sphere->_beads->at(i);
 
         BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
-        be->_curv=1;
+        be->_curv=1/1.5;
 
         be->orderConnections();
         be->updateBendingParameters();
@@ -79,10 +79,10 @@ void Physics::Balloon::update(){
     }else{
         _dt=(1e-8-2.5e-7)*std::exp(-(_step-40000)/40000.0)+2.5e-7;
     }
-    _dt=1e-5;
+    _dt=1e-4;
     //double p=_step<100000?50:(50-_P)*std::exp(-(_step-100000)/100000.0)+_P;
     double p=_P;
-    double kappa=_kappa*(1-std::exp(-_step/10.0));
+    double kappa=_kappa;
     if(_step%500==0){
         std::cout<<H<<"\t"<<MH<<"\t"<<_l<<"\t"<<p<<"\t"<<kappa<<"\t"<<A<<"\t"<<_dt<<std::endl;
         //std::exit(-1);
@@ -94,6 +94,7 @@ void Physics::Balloon::update(){
     for(int i=0;i<_sphere->_beads->size();i++){
         auto b=_sphere->_beads->at(i);
         BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
+        be->_curv=1/1.5f;
         _temp->zero();
 
 
@@ -119,7 +120,7 @@ void Physics::Balloon::update(){
 
     for(int i=0;i<_sphere->_edges->size();i++){
         auto edge=_sphere->_edges->at(i);
-        edge->_restLength=0.3952;
+      //  edge->_restLength=0.3952;
         _sf->eval(edge);
     }
     double s=_sphere->_beads->size();

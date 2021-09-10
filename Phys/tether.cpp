@@ -1,7 +1,7 @@
 #include "tether.h"
 
 Physics::Tether::Tether(double k):
-    _k(k),_scale(1.1)
+    _k(k),_scale(1)
 {
 
 }
@@ -16,7 +16,9 @@ void Physics::Tether::eval(Geometry::Edge *e) {
     double cl1=rl*0.85/_scale;
     double max=rl*1.33*_scale;
     double min=rl*0.67/_scale;
-
+    if(dr>max||dr<min){
+        std::cout<<dr<<"\t"<<max<<"\t"<<min<<std::endl;
+    }
     assert(dr<=max&&dr>=min);
 
     if(dr>cl0){

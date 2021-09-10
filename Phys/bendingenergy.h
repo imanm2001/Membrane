@@ -55,6 +55,7 @@ public:
     void updateBendingParameters();
     void orderConnections();
     double calE();
+    double calcSig();
 
 };
 }
