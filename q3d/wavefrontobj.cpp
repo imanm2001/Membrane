@@ -219,3 +219,29 @@ void Geometry::WaveFrontObj::buildMesh(Qt3DRender::QGeometry *customGeometry){
 Qt3DRender::QGeometryRenderer * Geometry::WaveFrontObj::mesh(){
     return _mesh;
 }
+
+void Geometry::WaveFrontObj::saveToFile(QString *path){
+    auto f=new QFile(*path);
+
+    if(f->open(QIODevice::WriteOnly | QIODevice::Text)){
+
+        auto fouts=new QTextStream(f);
+        QString vTemp=QString("v %1 %2 %3 \n");
+        QString fTemp=QString("f %1 %2 %3 \n");
+
+        for(int i=0;i<_beads->size();i++){
+            auto b=_beads->at(i);
+            fouts->operator<<(vTemp.arg(b->_coords->_coords[0],0,'E',10).arg(b->_coords->_coords[1],0,'E',10).arg(b->_coords->_coords[2],0,'E',10));
+
+
+        }
+
+        for(int i=0;i<_tris->size();i++){
+            auto t=_tris->at(i);
+            fouts->operator<<(fTemp.arg(t->_v[0]->ID+1).arg(t->_v[1]->ID+1).arg(t->_v[2]->ID+1));
+
+        }
+        fouts->flush();
+        delete(fouts);
+    }
+}

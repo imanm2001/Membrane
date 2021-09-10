@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QFileDialog>
 #include <QMainWindow>
 #include <QListWidgetItem>
 #include <q3d/triangle.h>
@@ -23,6 +24,7 @@ public:
 public slots:
     void listChanged();
     void pushButtClicked(bool);
+    void saveObjButtClicked(bool);
     void captureButtClicked(bool);
     void swapPushButtClicked(bool);
     void randomPushButtClicked(bool);

@@ -53,6 +53,7 @@ public:
     void update();
     //void loadFromFile();
     //void capture();
+    void saveObjToFile(QString *);
 
 };
 

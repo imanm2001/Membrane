@@ -40,6 +40,7 @@ protected:
         }
         out->flush();
     }
+
     void loadFromFile(){
 
         auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
@@ -126,6 +127,7 @@ public:
     virtual QString getTitle(){
         return *_title;
     }
+    virtual void saveObjToFile(QString *path)=0;
     virtual void saveToFile(){
         _capture=true;
     };

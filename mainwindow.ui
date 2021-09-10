@@ -176,6 +176,19 @@
      <string>Focus</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="saveObjPushButton">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>510</y>
+      <width>80</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save Obj</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

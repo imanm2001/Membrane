@@ -46,6 +46,7 @@ public:
     void updateVertecies();
     void buildMesh(Qt3DRender::QGeometry *customGeometry);
     void addNewEdge(Edge*);
+    void saveToFile(QString *);
 };
 
 #endif // WAVEFRONTOBJ_H

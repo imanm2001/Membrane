@@ -405,3 +405,6 @@ void Physics::Membrane::capture(){
     delete out;
 }
 */
+void Physics::Membrane::saveObjToFile(QString *){
+
+}

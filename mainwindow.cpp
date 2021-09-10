@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow),_mutex(),_init(false)
@@ -16,8 +17,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->swapPushButton,&QPushButton::clicked,this,&MainWindow::swapPushButtClicked);
     connect(ui->randomPushButton,&QPushButton::clicked,this,&MainWindow::randomPushButtClicked);
     connect(ui->captureButton,&QPushButton::clicked,this,&MainWindow::captureButtClicked);
+    connect(ui->saveObjPushButton,&QPushButton::clicked,this,&MainWindow::saveObjButtClicked);
     _running=true;
     _mt=_mt2=nullptr;
+}
+void MainWindow::saveObjButtClicked(bool b){
+    auto fileName = QFileDialog::getSaveFileName(this,tr("Save Wavetfront Obj"), ".", tr("Wavefront Obj Files (*.obj)"));
+    if(fileName.length()>0){
+        ui->widget3D->_mesh->saveObjToFile(&fileName);
+    }
 }
 void MainWindow::focusCamera(bool b){
     ui->widget3D->lookAtCenter();

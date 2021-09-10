@@ -201,3 +201,6 @@ void Physics::Balloon:: updateVIN(){
     _sphere->updateIndecies();
     _sphere->updateNormals();
 }
+void Physics::Balloon::saveObjToFile(QString *path){
+    _sphere->saveToFile(path);
+}
