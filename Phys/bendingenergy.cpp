@@ -1097,7 +1097,7 @@ double Physics::BendingEnergy::calE(){
     double ret=0;
     ret=_H-_curv;
     ret*=ret;
-    ret*=2*_Av;
+    ret*=_Av;
     return ret;
 }
 double Physics::BendingEnergy::calcSig(){

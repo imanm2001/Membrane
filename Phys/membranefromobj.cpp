@@ -5,14 +5,16 @@
 #define _T 0
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 1352
+#define _F 5001
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55)
 {
-    _Rind=8;
+    _FSign=-1;
+    _radialForce=-150;
+    _Rind=64;
     _cb=nullptr;
     _kappaFactor=1;
     _radiusFactor=1;
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d50.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d50_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_3scaled_smaller.obj)"));
     _tris=_disc->_tris;
     _scale=1e-5;
@@ -45,7 +47,15 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
                 _Rind=_xprofile->size();
                 mRdis=l;
             }
-            _xprofile->append(b);
+            int k=0;
+//            for(;k<_xprofile->size();k++){
+//                auto bb=_xprofile->at(k);
+//                if(bb->_coords->_coords[0]>b->_coords->_coords[0]){
+//                    break;
+//                }
+//            }
+//            _xprofile->insert(k,b);
+             _xprofile->append(b);
             if(fabs(b->_coords->_coords[0])<1e-3){
                 _cb=b;
             }
@@ -59,8 +69,8 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _initalArea=0;
     _APV=0;
     updateTris();
-     _TIE=0;
-     int N=0;
+    _TIE=0;
+    int N=0;
     for(int i=0;i<_disc->_beads->size();i++){
         auto b=_disc->_beads->at(i);
         BendingEnergy *be=new BendingEnergy(b);
@@ -86,10 +96,10 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
 
             _updatable->append(b);
         }
-    _APV=_initalArea/(double)N;
+        _APV=_initalArea/(double)N;
 
     }
-    std::cout<<"TOTAL::"<<_initalArea<<std::endl;
+    std::cout<<"TOTAL::"<<_initalArea<<"\t"<<_APV<<std::endl;
     //    _sf=new SpringForce(_K);
     _sf=new SpringForce(10000);
     _tet=new Tether(100000);
@@ -111,13 +121,13 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _pBE=0;
     allocMem();
     std::cout<<volumne()<<std::endl;
- loadFromFile();
- auto bb=_xprofile->at(8);
- _kappaFactor=bb->_coords->_coords[0]/2;
- _kappaFactor=2*_P*_kappaFactor*_kappaFactor*_kappaFactor/_kappa;
- _radiusFactor=(bb->_coords->_coords[0]-1e-2)/_THRESHOLD;
-_radiusFactor=1;
- std::cout<<"---"<<_kappaFactor<<"\t"<<_radiusFactor<<std::endl;
+    loadFromFile();
+    auto bb=_xprofile->at(9);
+    _kappaFactor=bb->_coords->_coords[0]/2;
+    _kappaFactor=2*_P*_kappaFactor*_kappaFactor*_kappaFactor/_kappa;
+    _radiusFactor=(bb->_coords->_coords[0]-1e-2)/_THRESHOLD;
+
+
     for(int i=0;i<_disc->_beads->size();i++){
         auto b=_disc->_beads->at(i);
         BendingEnergy *be=new BendingEnergy(b);
@@ -126,7 +136,7 @@ _radiusFactor=1;
 
     }
 
-    std::cout<<_TIE<<std::endl;
+    std::cout<<":::"<<_TIE<<std::endl;
 }
 
 void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,double P,double kappa,double dt){
@@ -143,7 +153,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
             be->_curv=0.048;
             //be->_curv=0.0;
         }else{
-          //  be->_curv=std::fmax(0.0,0.048*(1-(l-_THRESHOLD)/4));
+            //  be->_curv=std::fmax(0.0,0.048*(1-(l-_THRESHOLD)/4));
             be->_curv=0.048;
         }
         be->orderConnections();
@@ -151,8 +161,8 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 
     }
 
-    double totalBE=0;
-    for(int i=0;i<_disc->_beads->size();i++){
+    double totalBE=0,KE=0;
+    for(int i=0;_step>0&&i<_disc->_beads->size();i++){
         auto b=_disc->_beads->at(i);
         BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
         double l=b->_coords->len();
@@ -170,7 +180,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 
             //    _temp->print();
             b->_force->add(_temp);
-            BE+=kappa*be->calE();
+            BE+=_kappaFactor*_kappa*be->calE();
             //BE+=kappa*be->calcSig();
         }
     }
@@ -183,9 +193,10 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
         edge->location(_temp);
         double r=_temp->len();
         double e=_sf->eval(edge);
-        //SE+=e;
 
+        KE+=e;
         if(r<_THRESHOLD*_radiusFactor){
+
             BendingEnergy *be=(BendingEnergy *)edge->_vid1->getAttribute(BENDINGENERGY);
             double a=be->_Av;
             be=(BendingEnergy *)edge->_vid2->getAttribute(BENDINGENERGY);
@@ -222,7 +233,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 
             //totalBE+=_kappa*be->calE();
         }else{
-               b->_force->_coords[1]=-100*b->_coords->_coords[1];
+            b->_force->_coords[1]=-100*b->_coords->_coords[1];
         }
 
 
@@ -238,7 +249,8 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
         _cb->_force->_coords[1]+=_appliedF;
         _cb->_force->_coords[0]+=-1*_cb->_coords->_coords[0];
         _cb->_force->_coords[2]+=-1*_cb->_coords->_coords[2];
-         //std::cout<<_APV/be->_Av<<"\t"<<std::endl;
+
+        //std::cout<<_APV/be->_Av<<"\t"<<std::endl;
         //_cb->_force->_coords[0]=0;
         //_cb->_force->_coords[2]=0;
     }
@@ -256,15 +268,16 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
             _temp2->setValues(b->_coords);
             _temp2->nomilize();
             auto be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
-            double d=be->_n->dot(_temp2);
             _temp->setValues(be->_n);
             _temp->nomilize();
+            double d=_temp->dot(_temp2);
+
 
             _temp->multConst(d);
             _temp2->sub(_temp);
             _temp2->nomilize();
             ten+=_temp2->dot(b->_force)/be->_Av;
-            ten2+=_E*(_sf->_k/_K)*(be->_Av-_APV)/_APV;
+            ten2+=_E*(_sf->_k/_K/1.65)*(be->_Av-_APV)/_APV;
 
         }
         b->update(dt);
@@ -278,23 +291,24 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 #endif
     }
     double minF=0;
-    if(_step%100==0){
-        std::cout<<ten<<"\t"<<ten2<<std::endl;
-    }
+
     _temp->zero();
     for(int i=0;i<_border->size();i++){
         auto b=_border->at(i);
         double r=b->_coords->len();
         b->_force->_coords[1]=0;
-        if(r>48){
+        if(r>42.1){
             double f=b->_force->len();
+            double dr=(_frad-r);
             minF=std::fmax(f,minF);
-            b->_force->_coords[2]+=10000*(_frad-r)*b->_coords->_coords[2]/r;
-            b->_force->_coords[0]+=10000*(_frad-r)*b->_coords->_coords[0]/r;
+            //b->_force->_coords[2]+=10*dr*b->_coords->_coords[2]/r;
+            //b->_force->_coords[0]+=10*dr*b->_coords->_coords[0]/r;
 
-           // b->_coords->_coords[0]=b->_coords->_coords[0]*_frad/r;
-           // b->_coords->_coords[2]=b->_coords->_coords[2]*_frad/r;
+            // SE+=dr*dr*5;
 
+            b->_force->_coords[0]+=_radialForce*b->_coords->_coords[0]/r;
+            b->_force->_coords[2]+=_radialForce*b->_coords->_coords[2]/r;
+            SE-=dr*_radialForce;
             //;
             // if(f>100){
             //   if(std::fabs(_tension)>0.042){
@@ -314,7 +328,12 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
         totalBE=(-(-_F*_cb->_coords->_coords[1]+volumne()*_P));
     }
     // _tension=(_TIE-4*(_sf->_k/_K)*_E*(tA-_initalArea))/(2*_initalArea);
-    _tension=-(0.5*(-_TIE+BE)-totalBE+0*(_sf->_k/_K)*_E*(tA-_initalArea))/((_THRESHOLD*_radiusFactor)*(tA-_initalArea));
+    //_tension=-(0.0*(-_TIE+BE)-0*totalBE+0*(_sf->_k/_K)*_E*(tA-_initalArea))/((_THRESHOLD*_radiusFactor)*(tA-_initalArea));
+
+    _tension=(-_TIE+BE)*(0.04977764316091744)+(ten2)*(-0.001294612012995185)+(_F*_cb->_coords->_coords[1])*(0.0011541393111540513)+(volumne()*_P)*(0.016966224106566494)+(KE)*(0.024632178160253912)+(SE)*(-0.009050863839029583)+145.84154811364436;
+    if(_step%100==0){
+        std::cout<<-_TIE+BE<<"\t"<<ten2<<"\t"<<_F*_cb->_coords->_coords[1]<<"\t"<<volumne()*_P<<"\t"<<KE<<"\t"<<SE<<std::endl;
+    }
     //  std::cout<<tA-_initalArea<<std::endl;
     // _tension=(totalBE-_pBE)/(tA-_initalArea);
     // std::cout<<_tension<<std::endl;
@@ -346,13 +365,16 @@ void Physics::MembraneFromObj::update(){
     }*/
     for(int i=0;i<1;i++){
         updateTris();
-        updateBeads(_updatable,p,kappa,1e-6);
+        updateBeads(_updatable,p,kappa,5e-6);
     }
-     auto bb=_xprofile->at(_Rind);
-    _radiusFactor=((bb->_coords->_coords[0]-1e-2)/_THRESHOLD);//*(1-std::exp(-_step/2000.0))+1;
+    auto bb=_xprofile->at(_Rind);
+    _radiusFactor=((bb->_coords->_coords[0]-5e-2)/_THRESHOLD);//*(1-std::exp(-_step/2000.0))+1;
     if(_step%1000==0||_capture){
+        if(_step==1000){
+            _ptension=_tension;
+        }
         capture();
-        int mRdis=0;
+        double mRdis=0;
         for(int i=0;i<_xprofile->size();i++){
             auto b=_xprofile->at(i);
             double l=b->_coords->_coords[0];
@@ -375,14 +397,24 @@ void Physics::MembraneFromObj::update(){
                 _appliedF+=10;
                 _appliedF=std::fmin(_appliedF,_F);
             }
-            if(_step>1000&&std::fabs((_tension-_ptension))<1e-3&&std::fabs(_cb->_coords->_coords[1]-_py)<1e-4){
-                if(_tension>1){
-                       _frad*=0.999;
+            if(_step>1000&&std::fabs(_ptension2-_tension)<0.1){
+                if(_tension>0&&_ptension<_tension){
+                    _FSign*=-1;
+                }
+                if(_tension<0&&_ptension>_tension){
+                    _FSign*=-1;
+                }
+                if(_tension>5){
+                   // _radialForce+=0.1*_FSign;
+                    //_frad*=0.999;
                 }else if(_tension<0){
+                  //  _radialForce+=0.5*_FSign;
                     //   _frad*=1.001;
                 }
-            }
             _ptension=_tension;
+            }
+            _ptension2=_tension;
+
 
 
             if(_cb->_coords->_coords[1]<-1e-1&&_sf->_k>1&&_cb->_coords->_coords[1]-_py<0.1){
@@ -400,7 +432,7 @@ void Physics::MembraneFromObj::update(){
         }*/
         _py=_cb->_coords->_coords[1];
         std::cout<<"TEN:"<<_tension<<"\t"<<_initalArea<<std::endl;
-        std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_kappaFactor<<"\t"<<bb->_coords->_coords[0]<<"\t"<<_Rind<<std::endl;
+        std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_border->at(0)->_coords->len()<<"\t"<< _kappaFactor<<"_"<<mRdis<<"\t"<<bb->_coords->_coords[0]<<"\t"<<_Rind<<"\t"<<_radialForce<<std::endl;
         std::cout<<"STEP:"<<_step<<std::endl;
         std::cout.flush();
     }

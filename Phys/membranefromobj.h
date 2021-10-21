@@ -20,7 +20,7 @@ protected:
 private:
     double _initalArea,_pBE,_appliedF,_py,_cfy,_APV;
     Geometry::WaveFrontObj * _disc;
-    double _dt,_tension,_ptension,_TIE;
+    double _dt,_tension,_ptension,_ptension2,_TIE,_radialForce,_MRad,_FSign;
     Physics::VecD3d *_temp,*_temp2;
     Physics::SpringForce *_sf;
     Physics::Tether *_tet;
