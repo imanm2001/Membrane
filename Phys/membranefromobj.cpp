@@ -12,7 +12,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _cb=nullptr;
     _kappaFactor=1;
     _radiusFactor=1;
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d50.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d60.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_3scaled_smaller.obj)"));
     _tris=_disc->_tris;
     _scale=1e-5;
@@ -179,13 +179,14 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
         auto b=_border->at(i);
         double r=b->_coords->len();
         b->_force->_coords[1]=0;
-        if(r>48){
+        if(r>42){
             double f=b->_force->len();
             minF=std::fmax(f,minF);
             //b->_force->_coords[2]+=10000*(_frad-r)*b->_coords->_coords[2]/r;
             //b->_force->_coords[0]+=10000*(_frad-r)*b->_coords->_coords[0]/r;
 
             b->_coords->_coords[0]=b->_coords->_coords[0]*_frad/r;
+            b->_coords->_coords[1]=0;
             b->_coords->_coords[2]=b->_coords->_coords[2]*_frad/r;
 
             //;
