@@ -9,6 +9,7 @@
 
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55)
 {
+    //Amixed
     _FSign=-1;
     _radialForce=-150;
     _Rind=4;
