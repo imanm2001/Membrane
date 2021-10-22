@@ -8,6 +8,7 @@
 #define _F 0
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55)
 {
+    //Mesh Project
     _Rind=8;
     _cb=nullptr;
     _kappaFactor=1;
