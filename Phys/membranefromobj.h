@@ -26,7 +26,7 @@ private:
     Physics::Tether *_tet;
     int _step,_Rind;
     Physics::BeadInfo* _cb;
-    QVector<Geometry::BeadInfo*> *_border,*_xprofile,*_updatable;
+    QVector<Geometry::BeadInfo*> *_border,*_xprofile,*_updatable,*_beadsSrc;
     void updateBeads(QVector<Geometry::BeadInfo*> *,double P,double kappa,double dt);
     QRandomGenerator* _rand;
     double _frad;

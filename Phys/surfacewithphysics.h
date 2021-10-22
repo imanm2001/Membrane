@@ -42,18 +42,23 @@ protected:
     }
 
     void loadFromFile(){
+        auto path=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
+        loadFromFile(path,_beads);
 
-        auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
-        auto f=new QFile(s);
+    }
+
+    void loadFromFile(QString path,QVector<Geometry::BeadInfo*> *beads){
+
+        auto f=new QFile(path);
         if(f->exists()&&f->open(QIODevice::ReadOnly | QIODevice::Text)){
 
             auto fins=new QTextStream(f);
             int s;
             fins->operator>>(s);
-            assert(s==_beads->size());
+            assert(s==beads->size());
             double x,y,z;
-            for(int i=0;i<_beads->size();i++){
-                auto b=_beads->at(i);
+            for(int i=0;i<beads->size();i++){
+                auto b=beads->at(i);
                 fins->operator>>(x);
                 fins->operator>>(y);
                 fins->operator>>(z);
