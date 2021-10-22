@@ -10,11 +10,11 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
 {
     _FSign=-1;
     _radialForce=-150;
-    _Rind=64;
+    _Rind=4;
     _cb=nullptr;
     _kappaFactor=1;
     _radiusFactor=1;
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d50_relaxed.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d60_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_3scaled_smaller.obj)"));
     _tris=_disc->_tris;
     _scale=1e-5;
@@ -365,7 +365,7 @@ void Physics::MembraneFromObj::update(){
     }*/
     for(int i=0;i<1;i++){
         updateTris();
-        updateBeads(_updatable,p,kappa,5e-6);
+        updateBeads(_updatable,p,kappa,1e-6);
     }
     auto bb=_xprofile->at(_Rind);
     _radiusFactor=((bb->_coords->_coords[0]-5e-2)/_THRESHOLD);//*(1-std::exp(-_step/2000.0))+1;
@@ -383,6 +383,7 @@ void Physics::MembraneFromObj::update(){
                 mRdis=l;
             }
         }
+        std::cout<<_Rind<<std::endl;
 
         _kappaFactor=mRdis/2;
 
