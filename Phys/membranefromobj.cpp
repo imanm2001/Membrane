@@ -6,6 +6,7 @@
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
 #define _F 5001
+
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55)
 {
     _FSign=-1;
