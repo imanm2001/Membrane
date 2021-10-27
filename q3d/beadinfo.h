@@ -23,6 +23,7 @@ public:
     QVector<Geometry::Edge*> *_connections;
     QVector<Physics::BendingParameters*> *_bendingParameters;
     BeadInfo(QObject *, VecD3d *, double D, int ID);
+    BeadInfo(BeadInfo *parent);
     Geometry::Edge* createEdge(QObject *parent, BeadInfo* b);
     int findBeadIndexInTheConnection(Geometry::BeadInfo *);
     QObject* getAttribute(Attributes);

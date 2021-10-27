@@ -18,6 +18,7 @@ class Physics::Bead:public QObject
 {
 
 public:
+    Bead(Bead *);
     Bead(QObject*,VecD3d*,double D,int ID);
     void update(double dt);
     int ID;

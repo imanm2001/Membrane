@@ -17,5 +17,6 @@ public:
     double _k;
     SpringForce(double k);
     double eval(Geometry::Edge *e);
+    void eval(Physics::Bead*,Physics::Bead *,double);
 };
 #endif // SPRINGFORCE_H

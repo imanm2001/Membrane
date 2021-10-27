@@ -7,7 +7,10 @@ Geometry::BeadInfo::BeadInfo(QObject* p,VecD3d* loc,double D,int ID):Bead(p,loc,
     _bendingParameters=new QVector<Physics::BendingParameters*>();
 
 }
+Geometry::BeadInfo::BeadInfo(BeadInfo *parent):Bead(parent->parent(),new Physics::VecD3d(parent->_coords),parent->_GAMMA,parent->ID){
 
+
+}
 int Physics::BeadInfo::findBeadIndexInTheConnection(Geometry::BeadInfo * b){
     int ret=-1;
     for(int i=0;i<_connections->size();i++){

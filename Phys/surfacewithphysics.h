@@ -8,6 +8,7 @@
 #include <QVector>
 #include <QString>
 #include "q3d/beadinfo.h"
+#include "Phys/bead.h"
 #include "utils/classes.h"
 #define _KBT 6.21
 QT_BEGIN_NAMESPACE
@@ -43,13 +44,38 @@ protected:
 
     void loadFromFile(){
         auto path=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
-        loadFromFile(path,_beads);
+        loadFromFile( path,_beads);
 
     }
-
+/*
     void loadFromFile(QString path,QVector<Geometry::BeadInfo*> *beads){
 
         auto f=new QFile(path);
+        if(f->exists()&&f->open(QIODevice::ReadOnly | QIODevice::Text)){
+
+            auto fins=new QTextStream(f);
+            int s;
+            fins->operator>>(s);
+            assert(s==beads->size());
+            double x,y,z;
+            for(int i=0;i<beads->size();i++){
+                auto b=beads->at(i);
+                fins->operator>>(x);
+                fins->operator>>(y);
+                fins->operator>>(z);
+                b->_coords->setValues(x,y,z);
+            }
+        }
+    }*/
+    void loadFromFile(QString path,QVector<Geometry::BeadInfo*> *beads){
+        loadFromFile(path,(QVector<Physics::Bead*>*)beads);
+    }
+
+    void loadFromFile(QString path,QVector<Physics::Bead*> *beads){
+
+        auto f=new QFile(path);
+        std::cout<<path.toStdString()<<std::endl;
+        assert(f->exists());
         if(f->exists()&&f->open(QIODevice::ReadOnly | QIODevice::Text)){
 
             auto fins=new QTextStream(f);
@@ -83,9 +109,9 @@ protected:
         if(!error){
         //auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape\Shape_force_%1.txt)").arg(QUuid::createUuid().toString());
         //auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape\Shape_force_%1_%2.txt)").arg(QString::number(force),QUuid::createUuid().toString());
-        auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
+        auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_ScaledHD\Shape_%1_%2.txt)").arg(*_shape, *_title);
         std::cout<<s.toStdString()<<std::endl;
-        auto bak=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2_bak.txt)").arg(*_shape,*_title);
+        auto bak=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_ScaledHD\Shape_%1_%2_bak.txt)").arg(*_shape,*_title);
 
 
 
