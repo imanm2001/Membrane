@@ -214,7 +214,19 @@ Qt3DRender::QGeometryRenderer* Physics::MembraneFromObj::mesh(){
 }
 void Physics::MembraneFromObj::capture(){
     SurfaceWithPhysics::capture();
+    auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_profile_%2.txt)").arg(*_shape,*_title);
 
+    auto file=new QFile(s);
+
+
+    if (!file->open(QIODevice::WriteOnly | QIODevice::Text)){
+        assert(0)   ;
+        return;
+    }
+    auto out=new QTextStream(file);
+    writeBeadCoordinates(_xprofile,out);
+    file->close();
+    delete out;
 
 }
 void Physics::MembraneFromObj::updateVIN(){
