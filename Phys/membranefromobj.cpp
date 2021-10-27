@@ -214,6 +214,8 @@ Qt3DRender::QGeometryRenderer* Physics::MembraneFromObj::mesh(){
 }
 void Physics::MembraneFromObj::capture(){
     SurfaceWithPhysics::capture();
+
+
 }
 void Physics::MembraneFromObj::updateVIN(){
     _disc->updateVertecies();
