@@ -16,7 +16,6 @@ SOURCES += \
         Phys/bendingparameters.cpp \
         Phys/membrane.cpp \
         Phys/membranefromobj.cpp \
-        Phys/quad.cpp \
         Phys/springforce.cpp \
         Phys/springforce2.cpp \
         Phys/tensor2.cpp \
@@ -44,7 +43,6 @@ HEADERS += \
     Phys/bendingparameters.h \
     Phys/membrane.h \
     Phys/membranefromobj.h \
-    Phys/quad.h \
     Phys/springforce.h \
     Phys/springforce2.h \
     Phys/surfacewithphysics.h \
