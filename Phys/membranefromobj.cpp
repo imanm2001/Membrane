@@ -5,7 +5,7 @@
 #define _T 0
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 1300
+#define _F 7001
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55),_alpha(0)
 {
     std::cout<<"Load From Files"<<std::endl;
@@ -100,7 +100,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     }
     std::cout<<"TOTAL::"<<_initalArea<<std::endl;
     //    _sf=new SpringForce(_K);
-    _sf=new SpringForce(10000);
+    _sf=new SpringForce(100);
     _tet=new Tether(100000);
     _step=0;
 
@@ -131,7 +131,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     std::cout<<"---"<<_kappaFactor<<"\t"<<_radiusFactor<<std::endl;
     for(int i=0;i<_beads->size();i++){
         auto b=_beads->at(i);
-        auto q=new Quad(b,_K);
+        auto q=new Quad(b,1e4);
         _quads->append(q);
     }
 
@@ -142,7 +142,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
         _beadsDestF->append(bi);
     }
 
-    loadFromFile(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled_fixed_radial_force_r55\Shape_%1_%2.txt)").arg(*_shape, *_title),_beadsDestF);
+    loadFromFile(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled_fixed_radial_force_r44_d50\Shape_%1_%2.txt)").arg(*_shape, *_title),_beadsDestF);
     std::cout<<"Quads"<<std::endl;
     for(int i=0;i<_quads->size();i++){
         auto q=_quads->at(i);
@@ -170,6 +170,9 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     for(int i=0;i<_quads->size();i++){
         auto q=_quads->at(i);
         q->eval();
+    }
+    for(int i=0;i<_disc->_edges->size();i++){
+        _sf->eval(_disc->_edges->at(i));
     }
     for(int i=0;i<beads->size();i++){
         auto b=beads->at(i);
