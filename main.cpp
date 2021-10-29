@@ -17,6 +17,9 @@ int main(int argc, char *argv[])
 {
 
     QApplication app(argc, argv);
+    double a=10;
+    double *b=&a;
+    std::cout<<*b<<std::endl;
 
     MainWindow w;
     w.show();

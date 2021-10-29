@@ -35,6 +35,7 @@ private:
     double _frad;
     double _kappaFactor,_radiusFactor;
     double _alpha;
+    double _scale;
 
 public:
     MembraneFromObj(double dt);

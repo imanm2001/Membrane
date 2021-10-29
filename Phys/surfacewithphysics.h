@@ -43,7 +43,7 @@ protected:
     }
 
     void loadFromFile(){
-        auto path=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
+        auto path=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_ScaledHD\Shape_%1_%2.txt)").arg(*_shape, *_title);
         loadFromFile( path,_beads);
 
     }
@@ -75,7 +75,7 @@ protected:
 
         auto f=new QFile(path);
         std::cout<<path.toStdString()<<std::endl;
-        assert(f->exists());
+
         if(f->exists()&&f->open(QIODevice::ReadOnly | QIODevice::Text)){
 
             auto fins=new QTextStream(f);

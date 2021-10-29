@@ -9,6 +9,7 @@
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55),_alpha(0)
 {
     std::cout<<"Load From Files"<<std::endl;
+    _scale=1;
     //Mesh Project
     _Rind=8;
     _cb=nullptr;
@@ -20,7 +21,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _discDest=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d50_relaxed.obj)"));
     std::cout<<"All files are loaded"<<std::endl;
     _tris=_disc->_tris;
-    _scale=1e-5;
+
     _rand=_rand=QRandomGenerator::global();
     _border=new QVector<Geometry::BeadInfo*>();
     _xprofile=new QVector<Geometry::BeadInfo*>();
@@ -60,9 +61,9 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
             }
         }
 
-        b->_coords->_coords[0]+=1e-4*(_rand->generateDouble()-0.5);
-        b->_coords->_coords[1]+=1e-4*(_rand->generateDouble()-0.5);
-        b->_coords->_coords[2]+=1e-4*(_rand->generateDouble()-0.5);
+        //        b->_coords->_coords[0]+=1e-4*(_rand->generateDouble()-0.5);
+        //        b->_coords->_coords[1]+=1e-4*(_rand->generateDouble()-0.5);
+        //        b->_coords->_coords[2]+=1e-4*(_rand->generateDouble()-0.5);
 
     }
     _initalArea=0;
@@ -100,7 +101,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     }
     std::cout<<"TOTAL::"<<_initalArea<<std::endl;
     //    _sf=new SpringForce(_K);
-    _sf=new SpringForce(100);
+    _sf=new SpringForce(10);
     _tet=new Tether(100000);
     _step=0;
 
@@ -131,7 +132,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     std::cout<<"---"<<_kappaFactor<<"\t"<<_radiusFactor<<std::endl;
     for(int i=0;i<_beads->size();i++){
         auto b=_beads->at(i);
-        auto q=new Quad(b,1e4);
+        auto q=new Quad(b,1e3,&_scale);
         _quads->append(q);
     }
 
@@ -155,7 +156,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
         }
     }
     std::cout<<"100"<<std::endl;
-
+    loadFromFile();
 }
 
 void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,double P,double kappa,double dt){
@@ -166,17 +167,24 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     _temp->zero();
     _temp2->zero();
 
-
+    int j=_step/1000;
     for(int i=0;i<_quads->size();i++){
         auto q=_quads->at(i);
         q->eval();
     }
     for(int i=0;i<_disc->_edges->size();i++){
-        _sf->eval(_disc->_edges->at(i));
+        auto e=_disc->_edges->at(i);
+        _sf->eval(e->_vid1,e->_vid2,0);
     }
     for(int i=0;i<beads->size();i++){
         auto b=beads->at(i);
         b->update(dt);
+
+        if(j%10==0){
+            b->_coords->_coords[0]+=1e-2*(_rand->generateDouble()-0.5);
+            b->_coords->_coords[1]+=1e-2*(_rand->generateDouble()-0.5);
+            b->_coords->_coords[2]+=1e-2*(_rand->generateDouble()-0.5);
+        }
     }
 
 }
@@ -184,13 +192,19 @@ void Physics::MembraneFromObj::update(){
 
 
     updateTris();
-    updateBeads(_updatable,0,0,1e-5);
-
-    if(_step%1000==0||_capture){
+    updateBeads(_updatable,0,0,5e-5);
+    if(_step%1000==0){
         capture();
-        int mRdis=0;
+        std::cout<<_alpha<<"\t"<<_scale<<"\t"<<_step<<std::endl;
 
-        _alpha=std::fmin(1,_alpha+0.05);
+    }
+
+    if(_step%10==0||_capture){
+
+        int mRdis=0;
+        _scale=(1-_alpha)*0.025+0.925;
+        _alpha=std::fmin(1,_alpha+0.001);
+
 
         for(int i=0;i<_beadsDestI->size();i++){
             auto bi=_beadsDestI->at(i);
@@ -203,7 +217,7 @@ void Physics::MembraneFromObj::update(){
             _temp->multConst(_alpha);
             bt->_coords->add(_temp);
         }
-        std::cout<<_alpha<<std::endl;
+
     }
 
     _step++;
@@ -214,7 +228,7 @@ Qt3DRender::QGeometryRenderer* Physics::MembraneFromObj::mesh(){
 }
 void Physics::MembraneFromObj::capture(){
     SurfaceWithPhysics::capture();
-    auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_profile_%2.txt)").arg(*_shape,*_title);
+    auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_ScaledHD\Shape_%1_profile_%2.txt)").arg(*_shape,*_title);
 
     auto file=new QFile(s);
 

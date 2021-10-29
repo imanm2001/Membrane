@@ -1,6 +1,6 @@
 #include "quad.h"
 
-Physics::Quad::Quad(Physics::Bead* mb,double k)
+Physics::Quad::Quad(Physics::Bead* mb,double k,double *scale)
 {
     _mb=mb;
     _sf=new Physics::SpringForce(k);
@@ -10,7 +10,7 @@ Physics::Quad::Quad(Physics::Bead* mb,double k)
     _beads[2]=nullptr;
     _beads[3]=nullptr;
     _temp=new Physics::VecD3d();
-
+    _scale=scale;
 }
 
 void Physics::Quad::addNewCandidate(Physics::Bead* b){
@@ -42,7 +42,7 @@ void Physics::Quad::addNewCandidate(Physics::Bead* b){
 
 void Physics::Quad::eval(){
     for(int i=0;i<4;i++){
-        _sf->eval(_mb,_beads[i],_lens[i]);
+        _sf->eval(_mb,_beads[i],_lens[i]*(*_scale));
 
         _beads[i]->_force->zero();
     }

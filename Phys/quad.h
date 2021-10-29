@@ -15,12 +15,12 @@ class Physics::Quad:public QObject
 {
 private:
     Physics::VecD3d *_temp;
-
+    double *_scale;
 public:
     double _lens[4];
     Physics::Bead **_beads,*_mb;
     Physics::SpringForce *_sf;
-    Quad(Physics::Bead*,double);
+    Quad(Physics::Bead*,double,double*);
     void addNewCandidate(Physics::Bead*);
     void eval();
 
