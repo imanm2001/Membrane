@@ -1,22 +1,23 @@
 #include "membranefromobj.h"
 #define _P 1
-#define _K 1000
+#define _K 50
 #define _kappa 18522
 #define _T 0
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 2001
+#define _F 7010
 
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55)
 {
     //Amixed
     _FSign=-1;
-    _radialForce=-150;
+    _radialForce=-0;
     _Rind=4;
     _cb=nullptr;
     _kappaFactor=1;
     _radiusFactor=1;
     _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d50_relaxed.obj)"));
+    //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d60_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_3scaled_smaller.obj)"));
     _tris=_disc->_tris;
     _scale=1e-5;
@@ -152,12 +153,13 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
         be->_curv=0.0;
         if( l<_THRESHOLD*_radiusFactor ){
             //be->_curv=0.048*(1-std::exp(-(_step-0)/1000.0));
-            be->_curv=0.048;
-            //be->_curv=0.0;
+            be->_curv=2.0/(_THRESHOLD*_radiusFactor);
+
         }else{
             //  be->_curv=std::fmax(0.0,0.048*(1-(l-_THRESHOLD)/4));
             be->_curv=0.048;
         }
+        be->_curv=0.0;
         be->orderConnections();
         be->updateBendingParameters();
 

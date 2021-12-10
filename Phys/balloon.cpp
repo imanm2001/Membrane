@@ -9,7 +9,7 @@ Physics::Balloon::Balloon(double dt):SurfaceWithPhysics(),_dt(dt)
     distribution=std::normal_distribution<double>(0.0,1.0);
     _rand=_rand=QRandomGenerator::global();
     _dt*=1e-6;
-    _sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.15.obj)"));
+    _sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere_r1.652_d8.obj)"));
     //_sphere=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.obj)"));
     double el=0;
     for(int i=0;i<_sphere->_edges->size();i++){
@@ -79,7 +79,7 @@ void Physics::Balloon::update(){
     }else{
         _dt=(1e-8-2.5e-7)*std::exp(-(_step-40000)/40000.0)+2.5e-7;
     }
-    _dt=1e-4;
+    _dt=5e-4;
     //double p=_step<100000?50:(50-_P)*std::exp(-(_step-100000)/100000.0)+_P;
     double p=_P;
     double kappa=_kappa;
