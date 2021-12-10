@@ -1,11 +1,11 @@
 #include "membranefromobj.h"
-#define _P 0
-#define _K 100
-#define _kappa 0
+#define _P 1
+#define _K 50
+#define _kappa 18522
 #define _T 0
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 7001
+#define _F 4010
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55),_alpha(0)
 {
     std::cout<<"Load From Files"<<std::endl;
@@ -105,7 +105,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _tet=new Tether(100000);
     _step=0;
 
-    SurfaceWithPhysics::_title=new QString(QString("%1_%2_%3_%4").arg(QString::number(1),QString::number(1000),QString::number(18522),QString::number(_F)));
+    SurfaceWithPhysics::_title=new QString(QString("%1_%2_%3_%4").arg(QString::number(_P),QString::number(_K),QString::number(_kappa),QString::number(_F)));
     _frad=1;
     for(int i=0;i<_border->size();i++){
         auto b=_border->at(i);
