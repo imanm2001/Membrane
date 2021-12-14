@@ -43,6 +43,7 @@ protected:
     void loadFromFile(){
 
         auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
+        std::cout<<s.toStdString()<<std::endl;
         auto f=new QFile(s);
         if(f->exists()&&f->open(QIODevice::ReadOnly | QIODevice::Text)){
 

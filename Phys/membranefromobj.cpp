@@ -1,11 +1,11 @@
 #include "membranefromobj.h"
 #define _P 1
-#define _K 50
+#define _K 60
 #define _kappa 18522
-#define _T 0
+#define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 7010
+#define _F 4010
 
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55)
 {
@@ -16,8 +16,8 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _cb=nullptr;
     _kappaFactor=1;
     _radiusFactor=1;
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d50_relaxed.obj)"));
-    //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d60_relaxed.obj)"));
+    //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d50_relaxed.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d60_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_3scaled_smaller.obj)"));
     _tris=_disc->_tris;
     _scale=1e-5;
@@ -289,9 +289,9 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 
 #if _T>0
         double dts=std::sqrt(dt);
-        b->_coords->_coords[0]+=1e-1*(_rand->generateDouble()-0.5)*_T*dts;
-        b->_coords->_coords[1]+=1e-1*(_rand->generateDouble()-0.5)*_T*dts;
-        b->_coords->_coords[2]+=1e-1*(_rand->generateDouble()-0.5)*_T*dts;
+        b->_coords->_coords[0]+=0.75*(_rand->generateDouble()-0.5)*_T*dts;
+        b->_coords->_coords[1]+=0.75*(_rand->generateDouble()-0.5)*_T*dts;
+        b->_coords->_coords[2]+=0.75*(_rand->generateDouble()-0.5)*_T*dts;
 #endif
     }
     double minF=0;
@@ -369,7 +369,7 @@ void Physics::MembraneFromObj::update(){
     }*/
     for(int i=0;i<1;i++){
         updateTris();
-        updateBeads(_updatable,p,kappa,5e-6);
+        updateBeads(_updatable,p,kappa,1e-6);
     }
     auto bb=_xprofile->at(_Rind);
     _radiusFactor=((bb->_coords->_coords[0]-5e-2)/_THRESHOLD);//*(1-std::exp(-_step/2000.0))+1;
