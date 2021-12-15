@@ -219,7 +219,8 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
         //}
     }
     N=beads->size();
-
+    double rad=_THRESHOLD*_radiusFactor;
+    double fixedBoundary=0;
     for(int i=0;i<beads->size();i++){
         auto b=beads->at(i);
         BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
@@ -227,7 +228,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 
 
 
-        if(l<_THRESHOLD*_radiusFactor){
+        if(l<rad+1){
             _temp->setValues(be->_n);
             _temp->nomilize();
             _temp->multConst(-(_P)*be->_Av);
@@ -236,8 +237,12 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
             tA+=be->_Av;
 
             //totalBE+=_kappa*be->calE();
-        }else{
-            b->_force->_coords[1]=-100*b->_coords->_coords[1];
+            if(l>rad-0.1){
+                double f=-1000*b->_coords->_coords[1];
+                double e=-f*b->_coords->_coords[1];
+                fixedBoundary+=e;
+                        b->_force->_coords[1]+=f;
+                    }
         }
 
 
@@ -336,7 +341,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 
     _tension=(-_TIE+BE)*(0.04977764316091744)+(ten2)*(-0.001294612012995185)+(_F*_cb->_coords->_coords[1])*(0.0011541393111540513)+(volumne()*_P)*(0.016966224106566494)+(KE)*(0.024632178160253912)+(SE)*(-0.009050863839029583)+145.84154811364436;
     if(_step%100==0){
-        std::cout<<-_TIE+BE<<"\t"<<ten2<<"\t"<<_F*_cb->_coords->_coords[1]<<"\t"<<volumne()*_P<<"\t"<<KE<<"\t"<<SE<<std::endl;
+        std::cout<<-_TIE+BE<<"\t"<<ten2<<"\t"<<_F*_cb->_coords->_coords[1]<<"\t"<<volumne()*_P<<"\t"<<KE<<"\t"<<SE<<"\t"<<fixedBoundary<<std::endl;
     }
     //  std::cout<<tA-_initalArea<<std::endl;
     // _tension=(totalBE-_pBE)/(tA-_initalArea);
