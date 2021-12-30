@@ -36,7 +36,10 @@ double Physics::BendingEnergy::getChi(int j1,int j2){
     _temp2->sub(bij->_dxP);
     _temp2->nomilize();
     double tt=bijpm->_dxP->dot(_temp2)/(bijpm->_l);
-    if(tt==1||tt!=tt){
+    if(tt==1){
+        tt=1-1e-8;
+    }
+    if(tt!=tt){
         std::cout<<"----"<<_border<<std::endl;
         _temp2->print();
         bijpm->_dxP->print();
