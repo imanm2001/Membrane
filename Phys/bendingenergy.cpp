@@ -147,6 +147,11 @@ void Physics::BendingEnergy::updateBendingParameters(){
 
         double chi1=getChi(j,jp1), chi2=getChi(j,jp2);
         if(chi1*chi1>=1){
+            chi1=(1-1e-8)*(chi1>0?1:-1);
+            std::cout<<chi1<<"\t"<<chi2<<"\t"<<_border<<std::endl;
+        }
+        if(chi2*chi2>=1){
+            chi2=(1-1e-8)*(chi2>0?1:-1);
             std::cout<<chi1<<"\t"<<chi2<<"\t"<<_border<<std::endl;
         }
         assert(chi1*chi1<1);
