@@ -147,12 +147,12 @@ void Physics::BendingEnergy::updateBendingParameters(){
 
         double chi1=getChi(j,jp1), chi2=getChi(j,jp2);
         if(chi1*chi1>=1){
-            chi1=(1-1e-8)*(chi1>0?1:-1);
-            std::cout<<chi1<<"\t"<<chi2<<"\t"<<_border<<std::endl;
+            chi1=(1-1e-4)*(chi1>0?1:-1);
+            std::cout<<"CHI1"<<chi1<<"\t"<<chi2<<"\t"<<_border<<std::endl;
         }
         if(chi2*chi2>=1){
-            chi2=(1-1e-8)*(chi2>0?1:-1);
-            std::cout<<chi1<<"\t"<<chi2<<"\t"<<_border<<std::endl;
+            chi2=(1-1e-4)*(chi2>0?1:-1);
+            std::cout<<"CHI2"<<chi1<<"\t"<<chi2<<"\t"<<_border<<std::endl;
         }
         assert(chi1*chi1<1);
         assert(chi2*chi2<1);
@@ -164,6 +164,10 @@ void Physics::BendingEnergy::updateBendingParameters(){
         param->chiM=chi2;
         param->_cot1=chi1/std::sqrt(1-chi1*chi1);
         double cos2=getChi(jp1,j);
+        if(cos2*cos2>=1){
+            cos2=(1-1e-4)*(cos2>0?1:-1);
+            std::cout<<"COS2"<<chi1<<"\t"<<chi2<<"\t"<<_border<<std::endl;
+        }
         param->_cot2=cos2/std::sqrt(1-cos2*cos2);
         param->_T=param->_cot1+chi2/std::sqrt(1-chi2*chi2);
 

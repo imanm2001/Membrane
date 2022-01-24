@@ -18,7 +18,9 @@ class Physics::MembraneFromObj:public SurfaceWithPhysics
 protected:
     void capture();
 private:
-    double _initalArea,_pBE,_appliedF,_py,_cfy,_APV;
+    double _initalArea,_pBE,_appliedF,_py,_cfy,_APV,_pA;
+    double _pE[8];
+
     Geometry::WaveFrontObj * _disc;
     double _dt,_tension,_ptension,_ptension2,_TIE,_radialForce,_MRad,_FSign;
     Physics::VecD3d *_temp,*_temp2;
