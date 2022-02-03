@@ -5,6 +5,7 @@ Geometry::BeadInfo::BeadInfo(QObject* p,VecD3d* loc,double D,int ID):Bead(p,loc,
     qmap=new QMap<Attributes,QObject*>();
     _connections=new QVector<Geometry::Edge*>();
     _bendingParameters=new QVector<Physics::BendingParameters*>();
+    _originalLocations=new VecD3d(123,123,123);
 
 }
 

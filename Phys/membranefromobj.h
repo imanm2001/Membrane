@@ -8,6 +8,8 @@
 #include "math.h"
 #include "surfacewithphysics.h"
 #include "Phys/tether.h"
+#include "Phys/CTS.h"
+#include <gsl/gsl_linalg.h>
 QT_BEGIN_NAMESPACE
 namespace Physics {
 class MembraneFromObj;
@@ -18,12 +20,16 @@ class Physics::MembraneFromObj:public SurfaceWithPhysics
 protected:
     void capture();
 private:
+    VecD3d  **_CTSvs1,**_CTSvs2;
+    Geometry::BeadInfo **_CTSbeads;
+    gsl_matrix *_strainMatrix;
+    gsl_vector *_strainDirection,*_strainDirection2;
     double _initalArea,_pBE,_appliedF,_py,_cfy,_APV,_pA;
     double _pE[8];
-
+    Physics::CTS *_cts;
     Geometry::WaveFrontObj * _disc;
     double _dt,_tension,_ptension,_ptension2,_TIE,_radialForce,_MRad,_FSign;
-    Physics::VecD3d *_temp,*_temp2;
+    Physics::VecD3d *_temp,*_temp2,*_temp3;
     Physics::SpringForce *_sf;
     Physics::Tether *_tet;
     int _step,_Rind;
@@ -33,7 +39,8 @@ private:
     QRandomGenerator* _rand;
     double _frad;
     double _kappaFactor,_radiusFactor;
-
+    void testStrain();
+    void findThefourthVertex(Geometry::Triangle*,Geometry::Triangle*,Geometry::BeadInfo**);
 public:
     MembraneFromObj(double dt);
     Qt3DRender::QGeometryRenderer * mesh();
@@ -41,6 +48,9 @@ public:
     void updateVIN();
     double calE();
     double calE(int);
+    double calStrain();
+    double calStrain2D();
+    void Project2D(VecD3d**,VecD3d*,VecD3d*,VecD3d*);
 
 
 

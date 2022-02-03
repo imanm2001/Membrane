@@ -101,7 +101,7 @@ public:
     void drawTriangle(int i,Qt3DRender::QGeometry*);
     Qt3DRender::QGeometry* makeTri(Qt3DCore::QTransform *, const QColor& color, Qt3DCore::QEntity *_rootEntity);
     void snapshot();
-    void Q3dWidget::lookAtCenter();
+    void lookAtCenter();
     void init();
 };
 

@@ -5,6 +5,8 @@ Geometry::Triangle::Triangle(QObject* p,int id,Geometry::Edge *e1,Geometry::Edge
 {
     setParent(p);
     _location=new Physics::VecD3d();
+    _oLocation=new Physics::VecD3d();
+    _oNorm=new Physics::VecD3d();
     _e[0]=e1;
     _e[1]=e2;
     _e[2]=e3;
@@ -24,6 +26,12 @@ Geometry::Triangle::Triangle(QObject* p,int id,Geometry::Edge *e1,Geometry::Edge
     _v[2]=v3;
     _norm=new VecD3d();
     getNormal();
+    setOrginals();
+
+    assert(_v[0]->_coords->len()!=0);
+    assert(_v[1]->_coords->len()!=0);
+    assert(_v[2]->_coords->len()!=0);
+
     /*
     if(getNormal()._coords[2]<0){
         auto vt=v2;
@@ -163,7 +171,7 @@ void Geometry::Triangle::updateVIndecies(){
     //getNormal();
 #ifdef QT_DEBUG
     assert(newV!=nullptr);
-/*
+    /*
     if(_norm._coords[2]<0){
         std::cout<<"Normal ERRROORRRR------\t"<<oldInd<<std::endl;
     }*/
@@ -224,14 +232,14 @@ Physics::VecD3d* Geometry::Triangle::getNormal(){
 
     _norm->nomilize();
 
-    #ifdef QT_DEBUG
+#ifdef QT_DEBUG
     /*
     if(_norm._coords[2]<0){
         std::cout<<"NERROR\t"<<((Plane*)parent())->_tris.indexOf(this) <<std::endl;
 
 
     }*/
-    #endif
+#endif
 
     double dl1=std::sqrt(dx1*dx1+dy1*dy1+dz1*dz1);
     double dl2=std::sqrt(dx2*dx2+dy2*dy2+dz2*dz2);
@@ -259,6 +267,15 @@ Physics::VecD3d* Geometry::Triangle::getLocation(){
     _location->add(_v[2]->_coords);
     _location->multConst(1/3.0);
     return _location;
+}
+
+void Geometry::Triangle::setOrginals(){
+
+    _oNorm->setValues(getNormal());
+    _oLocation->setValues(getLocation());
+    _v[0]->_originalLocations->setValues(_v[0]->_coords);
+    _v[1]->_originalLocations->setValues(_v[1]->_coords);
+    _v[2]->_originalLocations->setValues(_v[2]->_coords);
 }
 int Geometry::Triangle::getVertexIndex(BeadInfo* bi){
     int ret=-1;

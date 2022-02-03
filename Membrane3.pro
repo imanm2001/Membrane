@@ -37,6 +37,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    Phys/CTS.h \
     Phys/balloon.h \
     Phys/bead.h \
     Phys/bendingenergy.h \
@@ -67,3 +68,7 @@ RESOURCES += \
 
 DISTFILES += \
     WireframeEffect2.qml
+
+
+INCLUDEPATH +="C:/Users/sm2983/Downloads/gsl-latest.tar/gsl-latest/install/include"
+LIBS += -L"C:/Users/sm2983/Downloads/gsl-latest.tar/gsl-latest/install/lib/" -llibgsl -llibgslcblas

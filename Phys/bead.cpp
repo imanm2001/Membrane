@@ -4,6 +4,7 @@ Physics::Bead::Bead(QObject* p,Physics::VecD3d* coord,double GAMMA,int id):QObje
     _force=new VecD3d();
 
     _force->zero();
+
 }
 void Physics::Bead::update(double dt){
     //GAMMA * D=KbT

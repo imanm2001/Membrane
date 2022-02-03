@@ -19,7 +19,9 @@ class Geometry::BeadInfo:public Physics::Bead
 {
 private:
     QMap<Attributes,QObject*> *qmap;
+
 public:   
+    Physics::VecD3d *_originalLocations;
     QVector<Geometry::Edge*> *_connections;
     QVector<Physics::BendingParameters*> *_bendingParameters;
     BeadInfo(QObject *, VecD3d *, double D, int ID);
