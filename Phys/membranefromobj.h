@@ -50,6 +50,7 @@ public:
     double calE(int);
     double calStrain();
     double calStrain2D();
+    double calStrain2D2();
     void Project2D(VecD3d**,VecD3d*,VecD3d*,VecD3d*);
 
 

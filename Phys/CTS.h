@@ -170,6 +170,7 @@ public:
         gsl_linalg_LU_invert(_gslMat,p,_res);
         for(int i=0;i<3;i++){
             std::fill(_temp1->data,_temp1->data+3,0.0);
+            std::fill(_temp2->data,_temp2->data+3,0.0);
             _temp1->data[i]=1;
             gsl_blas_dgemv(CblasNoTrans,1,_res,_temp1,0,_temp2);
             std::copy(_temp2->data,_temp2->data+3,coeffs->data+3*i);
@@ -186,7 +187,7 @@ public:
     }
     bool getStrainMatrix2D(VecD3d **vI,VecD3d **vF,gsl_matrix *res){
         if(getNcoeffs2D(vI,_coeffs)){
-
+            std::fill(_B->data,_B->data+_Brows*_Bcolumns,0.0);
             for(int n=0;n<3;n++){
                 _d->data[n*2]=vF[n]->_coords[0]-vI[n]->_coords[0];
                 _d->data[n*2+1]=vF[n]->_coords[2]-vI[n]->_coords[2];

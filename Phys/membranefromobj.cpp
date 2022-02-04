@@ -1,15 +1,15 @@
 #include "membranefromobj.h"
 
 #define _P 1
-#define _K 1000
+#define _K 1001
 #define _kappa 18522
 //#define _kappa 1
 #define _T 0
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 2003
+#define _F 3002
 
-#define _DT 5e-6
+#define _DT 1e-6
 
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55)
 {
@@ -22,7 +22,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
         _CTSvs1[i]=new VecD3d();
         _CTSvs2[i]=new VecD3d();
     }
-    _CTSbeads=(Geometry::BeadInfo**)malloc(sizeof(VecD3d)*4);
+    _CTSbeads=(Geometry::BeadInfo**)malloc(sizeof(BeadInfo*)*4);
     _strainMatrix=gsl_matrix_alloc(2,2);
     _strainDirection=gsl_vector_alloc(2);
     _strainDirection2=gsl_vector_alloc(2);
@@ -42,8 +42,8 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _kappaFactor=1;
     _radiusFactor=1;
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.obj)"));
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d50_relaxed.obj)"));
-    //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d60_relaxed.obj)"));
+    //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d50_relaxed.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d60_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_3scaled_smaller.obj)"));
     _tris=_disc->_tris;
     _scale=1e-5;
@@ -83,7 +83,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
                 _cb=b;
             }
         }
-/*
+        /*
         b->_coords->_coords[0]+=1e-4*(_rand->generateDouble()-0.5);
         b->_coords->_coords[1]+=1e-4*(_rand->generateDouble()-0.5);
         b->_coords->_coords[2]+=1e-4*(_rand->generateDouble()-0.5);
@@ -261,12 +261,14 @@ double Physics::MembraneFromObj::calStrain(){
 
     }
     std::cout<<area<<std::endl;
-    return ret/area;
+    return ret*area;
 }
 void Physics::MembraneFromObj::Project2D(VecD3d** res,VecD3d* e1,VecD3d* e2,VecD3d* temp){
-    auto v0=res[0];
-    double edots[4]={0,0,0,0};
 
+    double edots[6]={0,0,0,0,0,0};
+    for(int i=0;i<6;i++){
+        edots[i]=0;
+    }
     if(fabs(e1->dot(e2))>=1e-4){
         std::cout<<"---->>><<EE\t"<<e1->dot(e2)<<std::endl;
         e1->print();
@@ -274,24 +276,103 @@ void Physics::MembraneFromObj::Project2D(VecD3d** res,VecD3d* e1,VecD3d* e2,VecD
 
         assert(fabs(e1->dot(e2))<1e-4);
     }
-    for(int i=0;i<2;i++){
-        auto v=res[i+1];
-        v->subVec(v0,temp);
-        assert(v!=v0);
+    temp->zero();
+    for(int i=0;i<3;i++){
+        temp->add(res[i]);
+    }
+    temp->multConst(1/3.0);
+    for(int i=0;i<3;i++){
+        auto v=res[i];
+        v->sub(temp);
 
-        edots[i*2]=e1->dot(temp);
-        edots[i*2+1]=e2->dot(temp);
+
+        edots[i*2]=e1->dot(v);
+        edots[i*2+1]=e2->dot(v);
 
     }
-    v0->zero();
-    for(int i=0;i<2;i++){
-        res[i+1]->setValues(edots[i*2],0,edots[i*2+1]);
+
+    for(int i=0;i<3;i++){
+        res[i]->setValues(edots[i*2],0,edots[i*2+1]);
 
     }
 
 }
+double Physics::MembraneFromObj::calStrain2D2(){
+    double ret=0,area=0,r=0;
+
+    for(int i=0;i<_beads->size();i++){
+        r+=_beads->at(i)->_coords->len();
+    }
+    double NR=_THRESHOLD*_radiusFactor;
+    for(int n=0;n<_disc->_tris->size();n++){
+        auto tri=_disc->_tris->at(n);
+    _temp->zero();
+    _temp2->zero();
+    _temp3->zero();
+        if(tri->getLocation()->len()<NR){
+            for(int j=0;j<3;j++){
+
+                _CTSvs2[j]->setValues(tri->_v[j]->_coords);
+            }
+
+            double dr=0;
+            for(int j=0;j<3;j++){
+                _temp->setValues(tri->_e[j]->_vid1->_coords);
+                _temp2->setValues(tri->_e[j]->_vid2->_coords);
+                _temp2->sub(_temp);
+                dr+=(_temp2->len()-tri->_e[j]->_restLength)/tri->_e[j]->_restLength;
+            }
+            dr/=3;
+            _temp->setValues(tri->getNormal());
+            if(fabs(_temp->_coords[1])==1){
+
+                _temp->nomilize();
+                bool b=_temp->_coords[1]!=_temp->_coords[1]||fabs(_temp->_coords[1])==1;
+
+                for(int i=0;i<3&&b==1;i++){
+                    _temp->setValues(tri->_v[i]->_coords);
+                    _temp->nomilize();
+                    b=_temp->_coords[1]!=_temp->_coords[1]||fabs(_temp->_coords[1])==1;
+                }
+
+            }
+            //temp3=normal
+            _temp3->setValues(_temp);
+            _temp3->nomilize();
+            _temp->setValues(tri->getLocation());
+            //        _temp->nomilize();
+            //temp2= Phi Vector
+
+
+            _temp2->setValues(_temp->_coords[2],0,-_temp->_coords[0]);
+
+            _temp2->nomilize();
+
+            //_temp= theta
+            _temp2->cross(_temp3,_temp);
+
+            _temp->nomilize();
+
+
+            Project2D(_CTSvs2,_temp,_temp2,_temp3);
+
+            double mY=_CTSvs2[0]->_coords[0];
+            double MY=mY;
+            for(int j=1;j<2;j++){
+                mY=fmin(mY,_CTSvs2[j]->_coords[0]);
+                MY=fmax(MY,_CTSvs2[j]->_coords[0]);
+            }
+            ret+=(MY-mY)*dr;
+        }
+
+    }
+
+
+    std::cout<<area<<"\t"<<r/(double)_beads->size()<<std::endl<<std::endl<<"---2:"<<std::endl;
+    return ret;
+}
 double Physics::MembraneFromObj::calStrain2D(){
-    double ret=0,area=0,r;
+    double ret=0,area=0,r=0;
 
     for(int i=0;i<_beads->size();i++){
         r+=_beads->at(i)->_coords->len();
@@ -300,8 +381,10 @@ double Physics::MembraneFromObj::calStrain2D(){
     for(int n=0;n<_disc->_tris->size();n++){
         auto tri=_disc->_tris->at(n);
 
-        if(tri->getLocation()->len()<NR+1){
-
+        if(tri->getLocation()->len()<NR){
+            _temp->zero();
+            _temp2->zero();
+            _temp3->zero();
 
             for(int j=0;j<3;j++){
                 _CTSvs1[j]->setValues(tri->_v[j]->_originalLocations);
@@ -335,66 +418,69 @@ double Physics::MembraneFromObj::calStrain2D(){
 
                 }
 
-            //Normal Direction
-            _temp->nomilize();
-            _temp3->setValues(_temp);
+                //Normal Direction
+                _temp->nomilize();
+                _temp3->setValues(_temp);
 
+                //temp2= Phi Vector
+                _temp2->setValues(_temp3->_coords[2],0,-_temp3->_coords[0]);
+                _temp2->nomilize();
+
+                //_temp= theta
+                _temp2->cross(_temp3,_temp);
+                _temp->nomilize();
+
+            }
+            //_temp=r
+            Project2D(_CTSvs1,_temp,_temp2,_temp3);
+            _temp->setValues(tri->getNormal());
+            if(fabs(_temp->_coords[1])==1){
+
+                _temp->nomilize();
+                bool b=_temp->_coords[1]!=_temp->_coords[1]||fabs(_temp->_coords[1])==1;
+
+                for(int i=0;i<3&&b==1;i++){
+                    _temp->setValues(tri->_v[i]->_coords);
+                    _temp->nomilize();
+                    b=_temp->_coords[1]!=_temp->_coords[1]||fabs(_temp->_coords[1])==1;
+                }
+
+            }
+            //temp3=normal
+            _temp3->setValues(_temp);
+            _temp3->nomilize();
+            _temp->setValues(tri->getLocation());
+            //        _temp->nomilize();
             //temp2= Phi Vector
-            _temp2->setValues(_temp3->_coords[2],0,-_temp3->_coords[0]);
+
+
+            _temp2->setValues(_temp->_coords[2],0,-_temp->_coords[0]);
+
             _temp2->nomilize();
 
             //_temp= theta
             _temp2->cross(_temp3,_temp);
-            _temp->nomilize();
-
-        }
-        //_temp=r
-        Project2D(_CTSvs1,_temp,_temp2,_temp3);
-        _temp->setValues(tri->getNormal());
-        if(1||fabs(_temp->_coords[1])==1){
 
             _temp->nomilize();
-            bool b=_temp->_coords[1]!=_temp->_coords[1]||fabs(_temp->_coords[1])==1;
-
-            for(int i=0;i<3&&b==1;i++){
-                _temp->setValues(tri->_v[i]->_coords);
-                _temp->nomilize();
-                b=_temp->_coords[1]!=_temp->_coords[1]||fabs(_temp->_coords[1])==1;
-            }
-
-        }
-        _temp3->setValues(_temp);
-        _temp->setValues(tri->getLocation());
-        //        _temp->nomilize();
-        //temp2= Phi Vector
 
 
-        _temp2->setValues(_temp->_coords[2],0,-_temp->_coords[0]);
-
-        _temp2->nomilize();
-
-        //_temp= theta
-        _temp2->cross(_temp3,_temp);
-
-        _temp->nomilize();
-
-
-        Project2D(_CTSvs2,_temp,_temp2,_temp3);
-        if(_cts->getStrainMatrix2D(_CTSvs1,_CTSvs2,_strainMatrix)){
-            _temp2->setValues(1,0,0);
-            _cts->setVecToVec2D(_temp2,_strainDirection);
-            gsl_blas_dgemv(CblasNoTrans,1,_strainMatrix,_strainDirection,0,_strainDirection2);
-            double strainT;
-            gsl_blas_ddot(_strainDirection,_strainDirection2,&strainT);
-            double a=tri->area();
-            ret+=strainT;
-            /*
+            Project2D(_CTSvs2,_temp,_temp2,_temp3);
+            if(_cts->getStrainMatrix2D(_CTSvs1,_CTSvs2,_strainMatrix)){
+                _temp2->setValues(1,0,0);
+                _cts->setVecToVec2D(_temp2,_strainDirection);
+                _strainDirection2->data[0]=_strainDirection2->data[1]=0;
+                gsl_blas_dgemv(CblasNoTrans,1,_strainMatrix,_strainDirection,0,_strainDirection2);
+                double strainT=0;
+                gsl_blas_ddot(_strainDirection,_strainDirection2,&strainT);
+                double a=tri->area();
+                ret+=strainT*a;
+                /*
                 _cts->setVecToVec(_temp2,_strainDirection);
                 gsl_blas_dgemv(CblasNoTrans,1,_strainMatrix,_strainDirection,0,_strainDirection2);
 
                 gsl_blas_ddot(_strainDirection,_strainDirection2,&strainT);
                 ret+=strainT*a;*/
-            /*
+                /*
         _temp2->setValues(tri->getLocation());
         _temp2->nomilize();
         _cts->setVecToVec(_temp2,_strainDirection);
@@ -403,13 +489,15 @@ double Physics::MembraneFromObj::calStrain2D(){
         gsl_blas_ddot(_strainDirection,_strainDirection2,&strainT);
         ret+=strainT*a;*/
 
-            area+=a;
+                area+=a;
+            }
         }
+
     }
 
-}
-std::cout<<area<<"\t"<<r/(double)_beads->size()<<std::endl;
-return ret;
+
+    std::cout<<area<<"\t"<<r/(double)_beads->size()<<std::endl<<std::endl<<"---:"<<std::endl;
+    return ret;
 }
 
 void Physics::MembraneFromObj::testStrain(){
@@ -824,7 +912,7 @@ void Physics::MembraneFromObj::update(){
             _sf->_k=std::fmax(5000,_sf->_k*10);
         }*/
         //_py=_cb->_coords->_coords[1];
-        std::cout<<"TEN:"<<_THRESHOLD*_radiusFactor<<"\t"<<_initalArea<<"..."<<calStrain2D()<<"\t"<<_kappaFactor<<"\t"<<_kappa<<"\t"<<_radiusFactor<<std::endl;
+        std::cout<<"TEN:"<<_THRESHOLD*_radiusFactor<<"\t"<<_initalArea<<"..."<<calStrain2D2()<<"  SS\tSS  "<<calStrain2D()<<"\t"<<_kappaFactor<<"\t"<<_kappa<<"\t"<<_radiusFactor<<std::endl;
         //std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_border->at(0)->_coords->len()<<"\t"<< _kappaFactor<<"_"<<mRdis<<"\t"<<bb->_coords->_coords[0]<<"\t"<<_Rind<<"\t"<<_radialForce<<std::endl;
         //std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_border->at(0)->_coords->len()<<"\t"<< _kappaFactor<<"_"<<mRdis<<"\t"<<_Rind<<"\t"<<_radialForce<<std::endl;
         std::cout<<"STEP:"<<_step<<std::endl;

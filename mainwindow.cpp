@@ -55,6 +55,7 @@ void MainWindow::showEvent(QShowEvent *)
 MainWindow::~MainWindow()
 {
 
+    std::cout<<"terminate"<<std::endl;
     _running=false;
     if(_mt!=nullptr){
         while(_mt->isActive()){
@@ -150,7 +151,7 @@ bool MainWindow::updateMembrane(){
         //        std::cout<<"2Mem"<<std::endl;
         if(_mutex.tryLock()){
 
-            for(int i=0;i<200;i++){
+            for(int i=0;i<200&&_running;i++){
 
                 //_memb->update();
                 ui->widget3D->_mesh->update();
