@@ -5,7 +5,7 @@
 #define _T 0
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 2006
+#define _F 5002
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55),_alpha(0)
 {
     std::cout<<"Load From Files"<<std::endl;
@@ -16,7 +16,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _kappaFactor=1;
     _radiusFactor=1;
     std::cout<<"Load output"<<std::endl;
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d60_relaxed.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d55_relaxed.obj)"));
     std::cout<<"Load Destination"<<std::endl;
     _discDest=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d50_relaxed.obj)"));
     std::cout<<"All files are loaded"<<std::endl;
@@ -170,7 +170,9 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     int j=_step/1000;
     for(int i=0;i<_quads->size();i++){
         auto q=_quads->at(i);
+        if(q->_mb->_coords->len()<_THRESHOLD){
         q->eval();
+        }
     }
     for(int i=0;i<_disc->_edges->size();i++){
         auto e=_disc->_edges->at(i);
@@ -180,7 +182,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
         auto b=beads->at(i);
         b->update(dt);
 
-        if(j%10==0){
+        if(j%10==0&&j<21){
             b->_coords->_coords[0]+=1e-2*(_rand->generateDouble()-0.5);
             b->_coords->_coords[1]+=1e-2*(_rand->generateDouble()-0.5);
             b->_coords->_coords[2]+=1e-2*(_rand->generateDouble()-0.5);
