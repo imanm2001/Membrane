@@ -41,6 +41,7 @@ private:
     double _kappaFactor,_radiusFactor;
     void testStrain();
     void findThefourthVertex(Geometry::Triangle*,Geometry::Triangle*,Geometry::BeadInfo**);
+    Geometry::Triangle* _tempTri;
 public:
     MembraneFromObj(double dt);
     Qt3DRender::QGeometryRenderer * mesh();
@@ -51,6 +52,7 @@ public:
     double calStrain();
     double calStrain2D();
     double calStrain2D2();
+    void calRect(VecD3d**,double*,double*);
     void Project2D(VecD3d**,VecD3d*,VecD3d*,VecD3d*);
 
 

@@ -259,6 +259,7 @@ void Geometry::Triangle::printEdges(){
     std::cout<<_e[0]<<"\t"<<_e[1]<<"\t"<<_e[2]<<std::endl;
 }
 double Geometry::Triangle::area(){
+    getNormal();
     return _area;
 }
 Physics::VecD3d* Geometry::Triangle::getLocation(){
@@ -276,6 +277,7 @@ void Geometry::Triangle::setOrginals(){
     _v[0]->_originalLocations->setValues(_v[0]->_coords);
     _v[1]->_originalLocations->setValues(_v[1]->_coords);
     _v[2]->_originalLocations->setValues(_v[2]->_coords);
+    _oA=_area;
 }
 int Geometry::Triangle::getVertexIndex(BeadInfo* bi){
     int ret=-1;

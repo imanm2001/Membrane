@@ -19,12 +19,13 @@ private:
     bool isCommonEdge(Geometry::Edge *);
     Physics::VecD3d *_location;
 
-double _area;
+
 public:
+    double _area;
     int _ID;
     double _curvater;
     Physics::VecD3d* _norm,*_oNorm,*_oLocation;
-
+    double _oA;
     Geometry::BeadInfo* _v[3];
     Geometry::Edge * _e[3];
     double _angles[3];
