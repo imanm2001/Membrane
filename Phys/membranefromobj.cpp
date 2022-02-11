@@ -5,7 +5,7 @@
 #define _T 0
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 6001
+#define _F 3003
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55),_alpha(0)
 {
     std::cout<<"Load From Files"<<std::endl;
@@ -16,7 +16,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _kappaFactor=1;
     _radiusFactor=1;
     std::cout<<"Load output"<<std::endl;
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d55_relaxed.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d60_relaxed.obj)"));
     std::cout<<"Load Destination"<<std::endl;
     _discDest=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d50_relaxed.obj)"));
     std::cout<<"All files are loaded"<<std::endl;
