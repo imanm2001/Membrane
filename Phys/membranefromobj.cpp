@@ -7,7 +7,7 @@
 #define _T 0
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 3003
+#define _F 5002
 
 #define _DT 1e-6
 
@@ -413,7 +413,7 @@ double Physics::MembraneFromObj::calStrain2D(){
     double NR=_THRESHOLD*_radiusFactor;
     for(int n=0;n<_disc->_tris->size();n++){
         auto tri=_disc->_tris->at(n);
-        bool b=tri->getLocation()->len()<NR;
+        bool b=tri->getLocation()->len()<NR+0.5;
         if(b){
             _temp->zero();
             _temp2->zero();
