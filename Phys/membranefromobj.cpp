@@ -16,7 +16,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _kappaFactor=1;
     _radiusFactor=1;
     std::cout<<"Load output"<<std::endl;
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d60_relaxed.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d85_relaxed.obj)"));
     std::cout<<"Load Destination"<<std::endl;
     _discDest=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d50_relaxed.obj)"));
     std::cout<<"All files are loaded"<<std::endl;
