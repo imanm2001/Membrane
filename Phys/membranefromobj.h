@@ -24,7 +24,7 @@ private:
     Geometry::BeadInfo **_CTSbeads;
     gsl_matrix *_strainMatrix;
     gsl_vector *_strainDirection,*_strainDirection2;
-    double _initalArea,_pBE,_appliedF,_py,_cfy,_APV,_pA;
+    double _initalArea,_pBE,_appliedF,_py,_cfy,_APV,_pA,_dtF,_odtF;
     double _pE[8];
     Physics::CTS *_cts;
     Geometry::WaveFrontObj * _disc;
