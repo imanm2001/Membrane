@@ -1,15 +1,15 @@
 #include "membranefromobj.h"
 
 #define _P 1
-#define _K 1004
+#define _K 50000
 #define _kappa 18522
 //#define _kappa 1
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 5002
+#define _F 450
 
-#define _DT 1e-6
+#define _DT 3e-6
 
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55)
 {
@@ -38,13 +38,13 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     }else{
         _radialForce=25*res;
     }
-
+    _radialForce=-710;
     _Rind=4;
     _cb=nullptr;
     _kappaFactor=1;
     _radiusFactor=1;
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.obj)"));
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d85_relaxed.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d55_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d60_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_3scaled_smaller.obj)"));
     _tris=_disc->_tris;
@@ -311,7 +311,7 @@ void Physics::MembraneFromObj::Project2D(VecD3d** res,VecD3d* e1,VecD3d* e2,VecD
         temp->add(res[i]);
     }
     temp->multConst(1/3.0);*/
-   /*for(int i=0;i<3;i++){
+    /*for(int i=0;i<3;i++){
        res[i]->sub(temp);
     }*/
 
@@ -325,9 +325,9 @@ double Physics::MembraneFromObj::calStrain2D2(){
     double NR=_THRESHOLD*_radiusFactor;
     for(int n=0;n<_disc->_tris->size();n++){
         auto tri=_disc->_tris->at(n);
-    _temp->zero();
-    _temp2->zero();
-    _temp3->zero();
+        _temp->zero();
+        _temp2->zero();
+        _temp3->zero();
         if(tri->getLocation()->len()<NR){
             for(int j=0;j<3;j++){
 
@@ -437,7 +437,7 @@ double Physics::MembraneFromObj::calStrain2D(){
                 for(int i=0;i<3&&bb==1;i++){
                     _temp->setValues(tri->_v[i]->_originalLocations);
                     _temp->_coords[1]=0;
-                     bb=_temp->len()<1e-5;
+                    bb=_temp->len()<1e-5;
                     _temp->nomilize();
                 }
                 _temp->_coords[1]=0;
@@ -526,7 +526,7 @@ double Physics::MembraneFromObj::calStrain2D(){
                 gsl_blas_ddot(_strainDirection,_strainDirection2,&strainT);
                 double a=tri->_area;
 
-/*
+                /*
                 _temp2->setValues(0,0,1);
                 _temp2->nomilize();
                 _cts->setVecToVec2D(_temp2,_strainDirection);
@@ -581,7 +581,7 @@ double Physics::MembraneFromObj::calStrain2D(){
         }
 
     }
-
+    _maxR=r;
 
     std::cout<<area<<"\tR:\t"<<r<<std::endl<<std::endl<<"---:"<<std::endl;
     return ret;
@@ -659,7 +659,8 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     double tA=0;
     double BE=0,SE=0;
     double NR=_THRESHOLD*_radiusFactor;
-    bool thermal=(_step%20000)<100;
+    int t=(_step%3000)<100;
+    bool thermal=t>10&&t<40;;
     double dts=0;
 
     if(thermal){
@@ -798,6 +799,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     _temp->zero();
     _temp2->zero();
     double ten=0,ten2=0,ten3=0;
+
     for(int i=0;i<beads->size();i++){
         auto b=beads->at(i);
         double r=b->_coords->len();
@@ -817,6 +819,10 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
             double dA=be->_Av-_APV;
             ten2+=(dA*std::fabs(dA))/_APV;
             ten3+=(dA*dA)/_APV;
+
+        }
+        if(b->_coords->_coords[1]<0){
+            b->_force->_coords[1]-=10000*b->_coords->_coords[1];
 
         }
         b->update(dt);
@@ -937,11 +943,22 @@ void Physics::MembraneFromObj::update(){
     }
 
     if(_step%1000==0||_capture){
+        double cR=-1;
+        for(int i=0;i<_xprofile->size();i++){
+            auto b=_xprofile->at(i);
+
+            if(b->_coords->_coords[1]<0){
+                double l=b->_coords->len();
+                if (l<cR||cR==-1){
+                    cR=l;
+                }
+            }
+        }
         if(_step==1000){
             _ptension=_tension;
         }
         capture();
-        double mRdis=0;
+        double mRdis=-1;
         for(int i=0;i<_xprofile->size();i++){
             auto b=_xprofile->at(i);
             double l=b->_coords->len();
@@ -949,6 +966,9 @@ void Physics::MembraneFromObj::update(){
                 _Rind=i;
                 mRdis=l;
             }
+        }
+        if(cR==-1){
+            cR=mRdis;
         }
         std::cout<<_Rind<<std::endl;
 
@@ -965,18 +985,33 @@ void Physics::MembraneFromObj::update(){
                 _appliedF+=10;
                 _appliedF=std::fmin(_appliedF,_F);
             }
-            if(_step>1000&&std::fabs(_ptension2-_tension)<0.1){
+            if(_step>100){
                 if(_tension>0&&_ptension<_tension){
                     _FSign*=-1;
                 }
                 if(_tension<0&&_ptension>_tension){
                     _FSign*=-1;
                 }
-                if(_tension>5){
-                    // _radialForce+=0.1*_FSign;
+                if(_tension>20){
+                    _radialForce-=100;
                     //_frad*=0.999;
-                }else if(_tension<0){
-                    //  _radialForce+=0.5*_FSign;
+                }
+                else if(_tension>10){
+                    _radialForce-=10;
+                }
+                else if(_tension>5){
+                    _radialForce-=1;
+                }
+                else if(_tension<-20){
+                    _radialForce+=50;
+                    //   _frad*=1.001;
+                }
+                else if(_tension<-10){
+                    _radialForce+=5;
+                    //   _frad*=1.001;
+                }
+                else if(_tension<-5){
+                    _radialForce+=0.5;
                     //   _frad*=1.001;
                 }
                 _ptension=_tension;
@@ -999,7 +1034,12 @@ void Physics::MembraneFromObj::update(){
             _sf->_k=std::fmax(5000,_sf->_k*10);
         }*/
         //_py=_cb->_coords->_coords[1];
-        std::cout<<"TEN:"<<_THRESHOLD*_radiusFactor<<"\t"<<_initalArea<<"..."<<calStrain2D2()<<"  SS\tSS  "<<calStrain2D()<<"\t"<<_kappaFactor<<"\t"<<_kappa<<"\t"<<_radiusFactor<<std::endl;
+        double strain=calStrain2D();
+        double r=_THRESHOLD*_radiusFactor;
+        double param=(_maxR*_maxR-55.58*55.58)-(r*r-41.90562*41.9056);
+        _tension=(strain*(0.1470396597001456)+param*(0.1587402998498259)+(58.02959822902235))*cR/mRdis;;
+        std::cout<<"TEN:"<<_THRESHOLD*_radiusFactor<<"\t"<<cR<<"\t"<<_initalArea<<"...\tSS:  "<<strain<<"\t"<<param<<" ten\t"<<_tension<<"\t"<<_kappaFactor<<"\t"<<_kappa<<"\t"<<_radiusFactor<<std::endl;
+        std::cout<<"rForce"<<_radialForce<<std::endl;
         //std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_border->at(0)->_coords->len()<<"\t"<< _kappaFactor<<"_"<<mRdis<<"\t"<<bb->_coords->_coords[0]<<"\t"<<_Rind<<"\t"<<_radialForce<<std::endl;
         //std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_border->at(0)->_coords->len()<<"\t"<< _kappaFactor<<"_"<<mRdis<<"\t"<<_Rind<<"\t"<<_radialForce<<std::endl;
         std::cout<<"STEP:"<<_step<<std::endl;
@@ -1024,7 +1064,8 @@ Qt3DRender::QGeometryRenderer* Physics::MembraneFromObj::mesh(){
 }
 void Physics::MembraneFromObj::capture(){
     SurfaceWithPhysics::capture();
-    auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_profile_%2.txt)").arg(*_shape,*_title);
+    QString numb=QString::number(_step/1000);
+    auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_profile_%2_%3.txt)").arg(*_shape,*_title,numb);
 
     auto file=new QFile(s);
 
@@ -1037,6 +1078,7 @@ void Physics::MembraneFromObj::capture(){
     writeBeadCoordinates(_xprofile,out);
     file->close();
     delete out;
+
 }
 void Physics::MembraneFromObj::updateVIN(){
     _disc->updateVertecies();
