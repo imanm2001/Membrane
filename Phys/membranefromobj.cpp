@@ -416,7 +416,7 @@ double Physics::MembraneFromObj::calStrain2D(){
     double NR=_THRESHOLD*_radiusFactor;
     for(int n=0;n<_disc->_tris->size();n++){
         auto tri=_disc->_tris->at(n);
-        bool b=tri->getLocation()->len()<NR+0.1;
+        bool b=tri->getLocation()->len()<NR+0.8;
         if(b){
             _temp->zero();
             _temp2->zero();
