@@ -7,7 +7,7 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 450
+#define _F 403
 
 #define _DT 3e-6
 
@@ -1037,7 +1037,8 @@ void Physics::MembraneFromObj::update(){
         double strain=calStrain2D();
         double r=_THRESHOLD*_radiusFactor;
         double param=(_maxR*_maxR-55.58*55.58)-(r*r-41.90562*41.9056);
-        _tension=(strain*(0.1470396597001456)+param*(0.1587402998498259)+(58.02959822902235))*cR/mRdis;;
+
+        _tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))*cR/mRdis;;
         std::cout<<"TEN:"<<_THRESHOLD*_radiusFactor<<"\t"<<cR<<"\t"<<_initalArea<<"...\tSS:  "<<strain<<"\t"<<param<<" ten\t"<<_tension<<"\t"<<_kappaFactor<<"\t"<<_kappa<<"\t"<<_radiusFactor<<std::endl;
         std::cout<<"rForce"<<_radialForce<<std::endl;
         //std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_border->at(0)->_coords->len()<<"\t"<< _kappaFactor<<"_"<<mRdis<<"\t"<<bb->_coords->_coords[0]<<"\t"<<_Rind<<"\t"<<_radialForce<<std::endl;
