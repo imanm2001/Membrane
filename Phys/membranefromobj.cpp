@@ -7,7 +7,7 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 403
+#define _F 3001
 
 #define _DT 3e-6
 
@@ -44,7 +44,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _kappaFactor=1;
     _radiusFactor=1;
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.obj)"));
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d55_relaxed.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d60_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d60_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_3scaled_smaller.obj)"));
     _tris=_disc->_tris;
@@ -976,6 +976,12 @@ void Physics::MembraneFromObj::update(){
 
         _kappaFactor=2*_P*_kappaFactor*_kappaFactor*_kappaFactor/_kappa;
 
+        double strain=calStrain2D();
+        double r=_THRESHOLD*_radiusFactor;
+        double param=(_maxR*_maxR-55.58*55.58)-(r*r-41.90562*41.9056);
+        double alpha=cR/mRdis;
+
+        _tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))+27086.6*(1-alpha);
         if(_cb!=nullptr){
             if(std::fabs(_cb->_coords->_coords[1]-_py)<0.01 && _tension>1e-5){
                 //_sf->_k*=0.99;
@@ -1034,11 +1040,14 @@ void Physics::MembraneFromObj::update(){
             _sf->_k=std::fmax(5000,_sf->_k*10);
         }*/
         //_py=_cb->_coords->_coords[1];
+
+        /*
         double strain=calStrain2D();
         double r=_THRESHOLD*_radiusFactor;
         double param=(_maxR*_maxR-55.58*55.58)-(r*r-41.90562*41.9056);
 
         _tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))*cR/mRdis;;
+        */
         std::cout<<"TEN:"<<_THRESHOLD*_radiusFactor<<"\t"<<cR<<"\t"<<_initalArea<<"...\tSS:  "<<strain<<"\t"<<param<<" ten\t"<<_tension<<"\t"<<_kappaFactor<<"\t"<<_kappa<<"\t"<<_radiusFactor<<std::endl;
         std::cout<<"rForce"<<_radialForce<<std::endl;
         //std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_border->at(0)->_coords->len()<<"\t"<< _kappaFactor<<"_"<<mRdis<<"\t"<<bb->_coords->_coords[0]<<"\t"<<_Rind<<"\t"<<_radialForce<<std::endl;
