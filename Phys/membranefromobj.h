@@ -32,7 +32,7 @@ private:
     Physics::VecD3d *_temp,*_temp2,*_temp3;
     Physics::SpringForce *_sf;
     Physics::Tether *_tet;
-    int _step,_Rind;
+    int _step,_Rind,_pstep;
     Physics::BeadInfo* _cb;
     QVector<Geometry::BeadInfo*> *_border,*_xprofile,*_updatable;
     void updateBeads(QVector<Geometry::BeadInfo*> *,double P,double kappa,double dt);
