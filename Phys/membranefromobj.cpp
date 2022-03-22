@@ -1,7 +1,7 @@
 #include "membranefromobj.h"
 
 #define _P 1
-#define _K 50000
+#define _K 50001
 #define _kappa 18522
 //#define _kappa 1
 #define _T 1
@@ -38,7 +38,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     }else{
         _radialForce=25*res;
     }
-    _radialForce=-710;
+    _radialForce=-25;
     _Rind=4;
     _cb=nullptr;
     _kappaFactor=1;
@@ -947,7 +947,8 @@ void Physics::MembraneFromObj::update(){
         for(int i=0;i<_xprofile->size();i++){
             auto b=_xprofile->at(i);
 
-            if(b->_coords->_coords[1]<0){
+            if(b->_coords->_coords[1]<-1e-2){
+                b->_coords->print();
                 double l=b->_coords->len();
                 if (l<cR||cR==-1){
                     cR=l;
@@ -979,9 +980,9 @@ void Physics::MembraneFromObj::update(){
         double strain=calStrain2D();
         double r=_THRESHOLD*_radiusFactor;
         double param=(_maxR*_maxR-55.58*55.58)-(r*r-41.90562*41.9056);
-        double alpha=cR/mRdis;
-
-        _tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))+27086.6*(1-alpha);
+        double alpha=cR/(mRdis-0.8);
+        std::cout<<std::endl<<alpha<<"\t"<<cR<<"\t"<<mRdis<<std::endl;
+        _tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))+0*27086.6*(1-alpha);
         if(_cb!=nullptr){
             if(std::fabs(_cb->_coords->_coords[1]-_py)<0.01 && _tension>1e-5){
                 //_sf->_k*=0.99;
@@ -1022,6 +1023,7 @@ void Physics::MembraneFromObj::update(){
                 }
                 _ptension=_tension;
             }
+            _radialForce=-25;
             _ptension2=_tension;
 
 
