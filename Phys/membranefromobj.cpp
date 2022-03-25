@@ -7,9 +7,9 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 406
+#define _F 409
 
-#define _DT 3e-6
+#define _DT 1e-7
 
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(0),_frad(55)
 {
@@ -38,13 +38,16 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     }else{
         _radialForce=25*res;
     }
-    _radialForce=-0;
+
+    _appliedF=0;
+    _radialForce=0;
+    _pstep=_step=000;
     _Rind=4;
     _cb=nullptr;
     _kappaFactor=1;
     _radiusFactor=1;
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.obj)"));
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d55_relaxed.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d60_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d60_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_3scaled_smaller.obj)"));
     _tris=_disc->_tris;
@@ -136,7 +139,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _sf=new SpringForce(_K);
 
     _tet=new Tether(100000);
-    _pstep=_step=0;
+
 
     SurfaceWithPhysics::_title=new QString(QString("%1_%2_%3_%4").arg(QString::number(_P),QString::number(_K),QString::number(_kappa),QString::number(_F)));
     _frad=1;
@@ -661,7 +664,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     double tA=0;
     double BE=0,SE=0;
     double NR=_THRESHOLD*_radiusFactor;
-    int t=(_step%10000)<100;
+    int t=(_step%10000);
     bool thermal=t>10&&t<40;;
     double dts=0;
 
@@ -979,18 +982,20 @@ void Physics::MembraneFromObj::update(){
         _kappaFactor=2*_P*_kappaFactor*_kappaFactor*_kappaFactor/_kappa;
         double strain=calStrain2D();
         double r=_THRESHOLD*_radiusFactor;
-        double param=(_maxR*_maxR-55.58*55.58)-(r*r-41.90562*41.9056);
+        double param=(_maxR*_maxR-54.3153*54.3153)-(r*r-42.064*42.064);
         double alpha=cR/mRdis;
 
-        _tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))+27086.6*(1-alpha);
+        //_tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))+0*27086.6*(1-alpha);
+        _tension=(strain*(14.7252279407514)+param*(2.37879393183)+(66.2171030592555));
+
         if(_cb!=nullptr){
 
             _cb->_coords->print();
 
             if(_step>100){
 
-                if(_tension>20){
-                    _radialForce-=(_tension-_ptension)*0.1+(2e-2)*_tension;
+                if(1||_tension>20){
+                    _radialForce-=((_tension-_ptension)*0.1+(2e-2)*_tension)*(_step-_pstep)*_DT*5e4;
                     //_frad*=0.999;
                 }
                 else if(_tension>10){
@@ -1000,7 +1005,7 @@ void Physics::MembraneFromObj::update(){
                     _radialForce-=1;
                 }
                 else if(_tension<-20){
-                    _radialForce+=50;
+                    _radialForce-=((_tension-_ptension)*0.1+(2e-2)*_tension)*(_step-_pstep)*1e-3;
                     //   _frad*=1.001;
                 }
                 else if(_tension<-10){
@@ -1046,13 +1051,16 @@ void Physics::MembraneFromObj::update(){
                 out->flush();
                 file->close();
                 double a=fmax(0,fmin(1,22-_cb->_coords->_coords[1]));
-                _appliedF+=(12*(_step-_pstep)*_DT -dy)*1000*a;
+                _appliedF+=(12*(_step-_pstep)*_DT -dy)*50000*a;
                 _py=_cb->_coords->_coords[1];
                 _pstep=_step;
             }
             //_appliedF=404;
-            //_appliedF=_radialForce=0;
+/*
+            _appliedF=0;
+            _radialForce=0;*/
         }
+
         /*
         if(_tension>1e-4){
             _sf->_k=std::fmin(500,_sf->_k/10);
