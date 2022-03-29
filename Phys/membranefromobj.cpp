@@ -7,9 +7,9 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 3001
+#define _F 427
 
-#define _DT 3e-6
+#define _DT 1e-7
 
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55)
 {
@@ -38,7 +38,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     }else{
         _radialForce=25*res;
     }
-    _radialForce=-25;
+    _radialForce=-0;
     _Rind=4;
     _cb=nullptr;
     _kappaFactor=1;
@@ -979,10 +979,11 @@ void Physics::MembraneFromObj::update(){
 
         double strain=calStrain2D();
         double r=_THRESHOLD*_radiusFactor;
-        double param=(_maxR*_maxR-55.58*55.58)-(r*r-41.90562*41.9056);
+        double param=(_maxR*_maxR-54.3153*54.3153)-(r*r-42.064*42.064);
         double alpha=cR/(mRdis-0.8);
         std::cout<<std::endl<<alpha<<"\t"<<cR<<"\t"<<mRdis<<std::endl;
-        _tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))+0*27086.6*(1-alpha);
+        //_tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))+0*27086.6*(1-alpha);
+        _tension=strain*(14.5093297530095)+param*(3.25999986286536)+(521.642529910544);
         if(_cb!=nullptr){
             if(std::fabs(_cb->_coords->_coords[1]-_py)<0.01 && _tension>1e-5){
                 //_sf->_k*=0.99;
@@ -1023,10 +1024,10 @@ void Physics::MembraneFromObj::update(){
                 }
                 _ptension=_tension;
             }
-            _radialForce=-25;
+            //_radialForce=-25;
             _ptension2=_tension;
 
-
+            //_radialForce=_appliedF=0;
 
             if(_cb->_coords->_coords[1]<-1e-1&&_sf->_k>1&&_cb->_coords->_coords[1]-_py<0.1){
                 //   _sf->_k-=10;
