@@ -1,6 +1,6 @@
 #include "membranefromobj.h"
 #define _P 1
-#define _K 1000
+#define _K 1004
 #define _kappa 18522
 #define _T 0
 #define _E 2*_K/1.73205081
@@ -16,9 +16,9 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _kappaFactor=1;
     _radiusFactor=1;
     std::cout<<"Load output"<<std::endl;
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d85_relaxed.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r80_d90_relaxed.obj)"));
     std::cout<<"Load Destination"<<std::endl;
-    _discDest=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d50_relaxed.obj)"));
+    _discDest=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d85_relaxed.obj)"));
     std::cout<<"All files are loaded"<<std::endl;
     _tris=_disc->_tris;
 
@@ -143,7 +143,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
         _beadsDestF->append(bi);
     }
 
-    loadFromFile(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled_fixed_radial_force_r44_d50\Shape_%1_%2.txt)").arg(*_shape, *_title),_beadsDestF);
+    loadFromFile(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_ScaledHD_r55_d85\Shape_%1_%2.txt)").arg(*_shape, *_title),_beadsDestF);
     std::cout<<"Quads"<<std::endl;
     for(int i=0;i<_quads->size();i++){
         auto q=_quads->at(i);
