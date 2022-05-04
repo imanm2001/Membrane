@@ -93,6 +93,9 @@ void Physics::VecD3d::setValues(double x,double y,double z){
     _coords[2]=z;
 }
 void Physics::VecD3d::debug(){
+    if(_coords[0]!=_coords[0]){
+        print();
+    }
     assert(_coords[0]==_coords[0]);
     assert(_coords[1]==_coords[1]);
     assert(_coords[2]==_coords[2]);

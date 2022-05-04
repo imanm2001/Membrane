@@ -7,9 +7,9 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 409
+#define _F 433
 
-#define _DT 1e-7
+#define _DT 3e-6
 
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(0),_frad(55)
 {
@@ -39,9 +39,9 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
         _radialForce=25*res;
     }
 
-    _appliedF=0;
-    _radialForce=0;
-    _pstep=_step=000;
+    _appliedF=1000;
+    _radialForce=-2000;
+    _pstep=_step=634000;
     _Rind=4;
     _cb=nullptr;
     _kappaFactor=1;
@@ -181,9 +181,9 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
 
     for(int i=0;i<_disc->_beads->size();i++){
         auto b=_disc->_beads->at(i);
-        b->_coords->_coords[0]+=1e-3*(_rand->generateDouble()-0.5);
-        b->_coords->_coords[1]+=1e-3*(_rand->generateDouble()-0.5);
-        b->_coords->_coords[2]+=1e-3*(_rand->generateDouble()-0.5);
+        b->_coords->_coords[0]+=5e-3*(_rand->generateDouble()-0.5);
+        b->_coords->_coords[1]+=5e-3*(_rand->generateDouble()-0.5);
+        b->_coords->_coords[2]+=5e-3*(_rand->generateDouble()-0.5);
 
         BendingEnergy *be=new BendingEnergy(b);
         be->orderConnections();
@@ -194,6 +194,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
         _py=_cb->_coords->_coords[1];
     }
     std::cout<<":::"<<_TIE<<std::endl;
+    _RFA=_APFA=0;
 }
 void Physics::MembraneFromObj::findThefourthVertex(Geometry::Triangle* t1,Geometry::Triangle* t2,Geometry::BeadInfo** bi){
     std::copy(t1->_v,t1->_v+3,bi);
@@ -660,12 +661,13 @@ void Physics::MembraneFromObj::testStrain(){
 
 }
 
-void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,double P,double kappa,double dt){
+void Physics::MembraneFromObj:: updateBeads(QVector<Geometry::BeadInfo*> *beads,double P,double kappa,double dt){
     double tA=0;
     double BE=0,SE=0;
     double NR=_THRESHOLD*_radiusFactor;
-    int t=(_step%10000);
-    bool thermal=t>10&&t<40;;
+    int t=(_step%1000);
+    bool thermal=t>100&&t<800;;
+    thermal=1;
     double dts=0;
 
     if(thermal){
@@ -830,17 +832,19 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
             b->_force->_coords[1]-=10000*b->_coords->_coords[1];
 
         }
-        b->update(dt);
+
 
 
 #if _T>0
         if(thermal){
 
-            b->_coords->_coords[0]+=1e1*(_rand->generateDouble()-0.5)*_T*dts;
-            b->_coords->_coords[1]+=1e1*(_rand->generateDouble()-0.5)*_T*dts;
-            b->_coords->_coords[2]+=1e1*(_rand->generateDouble()-0.5)*_T*dts;
+            b->_coords->_coords[0]+=1e0*(_rand->generateDouble()-0.5)*_T*dts;
+            b->_coords->_coords[1]+=1e0*(_rand->generateDouble()-0.5)*_T*dts;
+            b->_coords->_coords[2]+=1e0*(_rand->generateDouble()-0.5)*_T*dts;
         }
+
 #endif
+          b->update(dt);
     }
     double minF=0;
 
@@ -924,6 +928,8 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 
 }
 void Physics::MembraneFromObj::update(){
+    _appliedF=fmin(fmax(_F, _appliedF+_APFA),1000);
+    _radialForce=fmax(-2000,fmin(_radialForce+_RFA,0));
 
     double p=_P;
     double kappa=_kappa;
@@ -983,10 +989,10 @@ void Physics::MembraneFromObj::update(){
         double strain=calStrain2D();
         double r=_THRESHOLD*_radiusFactor;
         double param=(_maxR*_maxR-54.3153*54.3153)-(r*r-42.064*42.064);
-        double alpha=cR/mRdis;
-
+        double alpha=cR/(mRdis-0.8);
+        std::cout<<std::endl<<alpha<<"\t"<<cR<<"\t"<<mRdis<<std::endl;
         //_tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))+0*27086.6*(1-alpha);
-        _tension=(strain*(14.7252279407514)+param*(2.37879393183)+(66.2171030592555));
+        _tension=strain*(14.5093297530095)+param*(3.25999986286536)+(521.642529910544);
 
         if(_cb!=nullptr){
 
@@ -995,7 +1001,8 @@ void Physics::MembraneFromObj::update(){
             if(_step>100){
 
                 if(1||_tension>20){
-                    _radialForce-=((_tension-_ptension)*0.1+(2e-2)*_tension)*(_step-_pstep)*_DT*5e4;
+                   // _radialForce-=((_tension-_ptension)*0.1+(2e-2)*(_tension+800))*(_step-_pstep)*_DT*1e4;
+                   // _RFA=-((_tension-_ptension)*0.1+(5e-2)*_tension)*(_step-_pstep)*_DT*1e-1;
                     //_frad*=0.999;
                 }
                 else if(_tension>10){
@@ -1030,12 +1037,12 @@ void Physics::MembraneFromObj::update(){
                 auto fileN=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2_FvT.txt)").arg(*_shape,*_title);
                 if(_step==1000){
 
-
+/*
                     if (QFile::exists(fileN))
                     {
                         QFile::remove(fileN);
-
                     }
+*/
                 }
                 auto file=new QFile(fileN);
 
@@ -1047,11 +1054,21 @@ void Physics::MembraneFromObj::update(){
                 out->operator<<(_step*_DT);
                 out->operator<<("\t");
                 out->operator<<(_appliedF);
+
+                out->operator<<("\t");
+                out->operator<<(_radialForce);
+                out->operator<<("\t");
+                out->operator<<(_tension);
+                out->operator<<("\t");
+                out->operator<<(_cb->_coords->_coords[1]);
                 out->operator<<("\r\n");
                 out->flush();
                 file->close();
                 double a=fmax(0,fmin(1,22-_cb->_coords->_coords[1]));
-                _appliedF+=(12*(_step-_pstep)*_DT -dy)*50000*a;
+                //_appliedF+=(20*(_step-_pstep)*_DT -dy)*20000*a;
+                //_APFA=0;
+                _APFA=(12*(_step-_pstep)*_DT -dy)*20*a;
+                _RFA=-(12*(_step-_pstep)*_DT -dy)*10*a;
                 _py=_cb->_coords->_coords[1];
                 _pstep=_step;
             }
@@ -1069,7 +1086,10 @@ void Physics::MembraneFromObj::update(){
             _sf->_k=std::fmax(5000,_sf->_k*10);
         }*/
         //_py=_cb->_coords->_coords[1];
-
+        /*
+         if(_step%3000==0){
+             _appliedF+=(_rand->generateDouble()-0.5)*0.1*_appliedF;
+         }*/
         //_tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956));
         std::cout<<"TEN:"<<_THRESHOLD*_radiusFactor<<"\t"<<cR<<"\t"<<_initalArea<<"...\tSS:  "<<strain<<"\t"<<param<<" ten\t"<<_tension<<"\t"<<_kappaFactor<<"\t"<<_kappa<<"\t"<<_radiusFactor<<std::endl;
         std::cout<<"rForce"<<_radialForce<<"\t"<<_appliedF<<std::endl;

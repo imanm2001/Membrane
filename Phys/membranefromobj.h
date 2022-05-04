@@ -35,6 +35,7 @@ private:
     int _step,_Rind,_pstep;
     Physics::BeadInfo* _cb;
     QVector<Geometry::BeadInfo*> *_border,*_xprofile,*_updatable;
+    double _RFA,_APFA;
     void updateBeads(QVector<Geometry::BeadInfo*> *,double P,double kappa,double dt);
     QRandomGenerator* _rand;
     double _frad;

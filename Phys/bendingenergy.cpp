@@ -221,11 +221,16 @@ void Physics::BendingEnergy::updateBendingParameters(){
         int jp=(j+1)%size;
         auto bp1=_bi->_bendingParameters->at(j);
         auto bp2=_bi->_bendingParameters->at(jp);
-        bp1->_phi=std::acos(bp1->_dxP->dot(bp2->_dxP)/(bp1->_l*bp2->_l));
+        double ac=bp1->_dxP->dot(bp2->_dxP)/(bp1->_l*bp2->_l);
+        assert(ac<=1||ac>=-1);
+        ac=fmax(-1,fmin(ac,1));
+        bp1->_phi=std::acos(ac);
         Kg-=bp1->_phi;
         assert(bp1->_phi!=0);
         assert(bp1->_normal!=nullptr);
+        bp1->_normal->debug();
         _temp1->setValues(bp1->_normal);
+
         _temp1->multConst(bp1->_phi);
         _A->add(_temp1);
         UP(-1,j,fixIndex(j+1,_bi->_connections),_temp1,_temp2,_temp3,bp1->_tensor);

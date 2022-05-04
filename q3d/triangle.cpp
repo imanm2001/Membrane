@@ -233,6 +233,7 @@ Physics::VecD3d* Geometry::Triangle::getNormal(){
     _norm->nomilize();
 
 #ifdef QT_DEBUG
+    _norm->debug();
     /*
     if(_norm._coords[2]<0){
         std::cout<<"NERROR\t"<<((Plane*)parent())->_tris.indexOf(this) <<std::endl;
