@@ -11,7 +11,7 @@
 
 #define _DT 3e-6
 
-Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55)
+Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55),_pstep(0)
 {
     _dtF=1;
     _tempTri=new Geometry::Triangle(this,12345,new Geometry::BeadInfo(this,new VecD3d(1,1,0),1,0),new Geometry::BeadInfo(this,new VecD3d(1,0,0),1,1),new Geometry::BeadInfo(this,new VecD3d(0,1,0),1,2),0);
@@ -995,38 +995,13 @@ void Physics::MembraneFromObj::update(){
                 _appliedF=std::fmin(_appliedF,_F);
             }
             if(_step>100){
-                if(_tension>0&&_ptension<_tension){
-                    _FSign*=-1;
-                }
-                if(_tension<0&&_ptension>_tension){
-                    _FSign*=-1;
-                }
-                if(_tension>20){
-                    _radialForce-=100;
-                    //_frad*=0.999;
-                }
-                else if(_tension>10){
-                    _radialForce-=10;
-                }
-                else if(_tension>5){
-                    _radialForce-=1;
-                }
-                else if(_tension<-20){
-                    _radialForce+=50;
-                    //   _frad*=1.001;
-                }
-                else if(_tension<-10){
-                    _radialForce+=5;
-                    //   _frad*=1.001;
-                }
-                else if(_tension<-5){
-                    _radialForce+=0.5;
-                    //   _frad*=1.001;
-                }
+                _radialForce-=((_tension-_ptension)*0.1+(2e-2)*(_tension+800))*(_step-_pstep)*_DT*1e4;
+
                 _ptension=_tension;
             }
             //_radialForce=-25;
             _ptension2=_tension;
+            _pstep=_step;
 
             //_radialForce=_appliedF=0;
 
