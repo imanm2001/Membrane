@@ -7,7 +7,7 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 3001
+#define _F 6500
 
 #define _DT 3e-6
 
@@ -44,7 +44,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     _kappaFactor=1;
     _radiusFactor=1;
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.obj)"));
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d60_relaxed.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r80_d90_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d60_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_3scaled_smaller.obj)"));
     _tris=_disc->_tris;
@@ -979,7 +979,7 @@ void Physics::MembraneFromObj::update(){
 
         double strain=calStrain2D();
         double r=_THRESHOLD*_radiusFactor;
-        double param=(_maxR*_maxR-54.3153*54.3153)-(r*r-42.064*42.064);
+        double param=(_maxR*_maxR-79.6341*79.6341)-(r*r-42.0564*42.0564);
         double alpha=cR/(mRdis-0.8);
         std::cout<<std::endl<<alpha<<"\t"<<cR<<"\t"<<mRdis<<std::endl;
         //_tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))+0*27086.6*(1-alpha);
@@ -995,7 +995,7 @@ void Physics::MembraneFromObj::update(){
                 _appliedF=std::fmin(_appliedF,_F);
             }
             if(_step>100){
-                _radialForce-=((_tension-_ptension)*0.1+(2e-2)*(_tension+800))*(_step-_pstep)*_DT*1e4;
+                _radialForce-=((_tension-_ptension)*0.1+(2e-2)*(_tension))*(_step-_pstep)*_DT*1e3;
 
                 _ptension=_tension;
             }
