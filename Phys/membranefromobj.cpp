@@ -1,7 +1,7 @@
 #include "membranefromobj.h"
 
 #define _P 1
-#define _K 50000
+#define _K 50006
 #define _kappa 18522
 //#define _kappa 1
 #define _T 1
@@ -41,13 +41,14 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
 
     _appliedF=1000;
     _radialForce=-2000;
-    _pstep=_step=634000;
+    _pstep=_step=1271000;
     _Rind=4;
     _cb=nullptr;
     _kappaFactor=1;
     _radiusFactor=1;
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\sphere2_r1.obj)"));
-    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d60_relaxed.obj)"));
+    //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r55_d60_relaxed.obj)"));
+    _disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r80_d90_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\disc_r44_d60_relaxed.obj)"));
     //_disc=new Geometry::WaveFrontObj(QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\oval3_r1_3scaled_smaller.obj)"));
     _tris=_disc->_tris;
@@ -992,8 +993,8 @@ void Physics::MembraneFromObj::update(){
         double alpha=cR/(mRdis-0.8);
         std::cout<<std::endl<<alpha<<"\t"<<cR<<"\t"<<mRdis<<std::endl;
         //_tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))+0*27086.6*(1-alpha);
-        _tension=strain*(14.5093297530095)+param*(3.25999986286536)+(521.642529910544);
-
+        //_tension=strain*(14.5093297530095)+param*(3.25999986286536)+(521.642529910544); //r55  d60
+        _tension=strain*(14.125051896565202)+param*(1.3863713270604137)+(66.91552217921635);
         if(_cb!=nullptr){
 
             _cb->_coords->print();
