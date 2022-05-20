@@ -437,7 +437,7 @@ double Physics::MembraneFromObj::calStrain2D(){
                 for(int i=0;i<3&&bb==1;i++){
                     _temp->setValues(tri->_v[i]->_originalLocations);
                     _temp->_coords[1]=0;
-                    bb=_temp->len()<1e-5;
+                     bb=_temp->len()<1e-5;
                     _temp->nomilize();
                 }
                 _temp->_coords[1]=0;
@@ -526,7 +526,7 @@ double Physics::MembraneFromObj::calStrain2D(){
                 gsl_blas_ddot(_strainDirection,_strainDirection2,&strainT);
                 double a=tri->_area;
 
-                /*
+/*
                 _temp2->setValues(0,0,1);
                 _temp2->nomilize();
                 _cts->setVecToVec2D(_temp2,_strainDirection);
@@ -581,7 +581,7 @@ double Physics::MembraneFromObj::calStrain2D(){
         }
 
     }
-    _maxR=r;
+
 
     std::cout<<area<<"\tR:\t"<<r<<std::endl<<std::endl<<"---:"<<std::endl;
     return ret;
