@@ -984,7 +984,8 @@ void Physics::MembraneFromObj::update(){
         std::cout<<std::endl<<alpha<<"\t"<<cR<<"\t"<<mRdis<<std::endl;
         //_tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))+0*27086.6*(1-alpha);
         //_tension=strain*(14.5093297530095)+param*(3.25999986286536)+(521.642529910544);
-        _tension=strain*(14.125051896565202)+param*(1.3863713270604137)+(66.91552217921635);
+        _tension=strain*(14.965913222422378)+param*(0.757068516982182)+(65.57094366299579);
+
         if(_cb!=nullptr){
             if(std::fabs(_cb->_coords->_coords[1]-_py)<0.01 && _tension>1e-5){
                 //_sf->_k*=0.99;
