@@ -584,6 +584,7 @@ double Physics::MembraneFromObj::calStrain2D(){
 
 
   //  std::cout<<area<<"\tR:\t"<<r<<std::endl<<std::endl<<"---:"<<std::endl;
+    _maxR=r;
     return ret;
 }
 
