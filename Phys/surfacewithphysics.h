@@ -51,11 +51,7 @@ protected:
             int s;
             fins->operator>>(s);
             assert(s==_beads->size());
-            for(int i=0;i<len;i++){
-                double d;
-                fins->operator>>(d);
-                data[i]=d;
-            }
+
             double x,y,z;
             for(int i=0;i<_beads->size();i++){
                 auto b=_beads->at(i);
@@ -63,6 +59,11 @@ protected:
                 fins->operator>>(y);
                 fins->operator>>(z);
                 b->_coords->setValues(x,y,z);
+            }
+            for(int i=0;i<len&&!fins->atEnd();i++){
+                double d;
+                fins->operator>>(d);
+                data[i]=d;
             }
         }
     }
@@ -106,12 +107,13 @@ protected:
         auto out=new QTextStream(file);
         out->operator<<(_beads->size());
         out->operator<<("\r\n");
+
+
+        writeBeadCoordinates(_beads,out);
         for(int i=0;i<len;i++){
         out->operator<<(data[i]);
         out->operator<<("\r\n");
         }
-
-        writeBeadCoordinates(_beads,out);
         file->close();
         delete out;
         }
