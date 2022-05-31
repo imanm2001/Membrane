@@ -60,7 +60,7 @@ protected:
                    fins->operator>>(z);
                    b->_coords->setValues(x,y,z);
                }
-               for(int i=0;i<len;i++){
+               for(int i=0;i<len&&!fins->atEnd();i++){
                    double d;
                    fins->operator>>(d);
                    data[i]=d;
