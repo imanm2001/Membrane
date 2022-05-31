@@ -7,7 +7,7 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 433
+#define _F 434
 
 #define _DT 3e-6
 
@@ -39,9 +39,9 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
         _radialForce=25*res;
     }
 
-    _appliedF=1000;
-    _radialForce=-2000;
-    _pstep=_step=1271000;
+    _appliedF=800;
+    _radialForce=-4000;
+    _pstep=_step=384000;
     _Rind=4;
     _cb=nullptr;
     _kappaFactor=1;
@@ -444,7 +444,7 @@ double Physics::MembraneFromObj::calStrain2D(){
                 for(int i=0;i<3&&bb==1;i++){
                     _temp->setValues(tri->_v[i]->_originalLocations);
                     _temp->_coords[1]=0;
-                    bb=_temp->len()<1e-5;
+                     bb=_temp->len()<1e-5;
                     _temp->nomilize();
                 }
                 _temp->_coords[1]=0;
@@ -533,7 +533,7 @@ double Physics::MembraneFromObj::calStrain2D(){
                 gsl_blas_ddot(_strainDirection,_strainDirection2,&strainT);
                 double a=tri->_area;
 
-                /*
+/*
                 _temp2->setValues(0,0,1);
                 _temp2->nomilize();
                 _cts->setVecToVec2D(_temp2,_strainDirection);
@@ -588,9 +588,10 @@ double Physics::MembraneFromObj::calStrain2D(){
         }
 
     }
-    _maxR=r;
 
-    std::cout<<area<<"\tR:\t"<<r<<std::endl<<std::endl<<"---:"<<std::endl;
+
+  //  std::cout<<area<<"\tR:\t"<<r<<std::endl<<std::endl<<"---:"<<std::endl;
+    _maxR=r;
     return ret;
 }
 
@@ -929,8 +930,8 @@ void Physics::MembraneFromObj:: updateBeads(QVector<Geometry::BeadInfo*> *beads,
 
 }
 void Physics::MembraneFromObj::update(){
-    _appliedF=fmin(fmax(_F, _appliedF+_APFA),1000);
-    _radialForce=fmax(-2000,fmin(_radialForce+_RFA,0));
+    _appliedF=fmin(fmax(_F, _appliedF+_APFA),800);
+    _radialForce=fmax(-4000,fmin(_radialForce+_RFA,0));
 
     double p=_P;
     double kappa=_kappa;
@@ -989,12 +990,14 @@ void Physics::MembraneFromObj::update(){
         _kappaFactor=2*_P*_kappaFactor*_kappaFactor*_kappaFactor/_kappa;
         double strain=calStrain2D();
         double r=_THRESHOLD*_radiusFactor;
-        double param=(_maxR*_maxR-54.3153*54.3153)-(r*r-42.064*42.064);
+        //double param=(_maxR*_maxR-54.3153*54.3153)-(r*r-42.064*42.064);
+        double param=(_maxR*_maxR-79.6341*79.6341)-(r*r-42.0564*42.0564);
         double alpha=cR/(mRdis-0.8);
         std::cout<<std::endl<<alpha<<"\t"<<cR<<"\t"<<mRdis<<std::endl;
         //_tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))+0*27086.6*(1-alpha);
         //_tension=strain*(14.5093297530095)+param*(3.25999986286536)+(521.642529910544); //r55  d60
-        _tension=strain*(14.125051896565202)+param*(1.3863713270604137)+(66.91552217921635);
+        //_tension=strain*(14.125051896565202)+param*(1.3863713270604137)+(66.91552217921635);
+        _tension=strain*(14.965913222422378)+param*(0.757068516982182)+(65.57094366299579);
         if(_cb!=nullptr){
 
             _cb->_coords->print();
@@ -1065,7 +1068,8 @@ void Physics::MembraneFromObj::update(){
                 out->operator<<("\r\n");
                 out->flush();
                 file->close();
-                double a=fmax(0,fmin(1,22-_cb->_coords->_coords[1]));
+                //double a=fmax(0,fmin(1,22-_cb->_coords->_coords[1]));
+                double a=1;
                 //_appliedF+=(20*(_step-_pstep)*_DT -dy)*20000*a;
                 //_APFA=0;
                 _APFA=(12*(_step-_pstep)*_DT -dy)*20*a;
