@@ -40,7 +40,7 @@ protected:
         }
         out->flush();
     }
-    void loadFromFile(){
+    void loadFromFile(double *data,int len){
 
         auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
         std::cout<<s.toStdString()<<std::endl;
@@ -51,6 +51,11 @@ protected:
             int s;
             fins->operator>>(s);
             assert(s==_beads->size());
+            for(int i=0;i<len;i++){
+                double d;
+                fins->operator>>(d);
+                data[i]=d;
+            }
             double x,y,z;
             for(int i=0;i<_beads->size();i++){
                 auto b=_beads->at(i);
@@ -66,7 +71,7 @@ protected:
             _tris->at(i)->getNormal();
         }
     }
-    void capture(){
+    void capture(double *data,int len){
         bool error=false;
         for(int i=0;i<_beads->size();i++){
             double l=_beads->at(i)->_coords->len();
@@ -101,6 +106,11 @@ protected:
         auto out=new QTextStream(file);
         out->operator<<(_beads->size());
         out->operator<<("\r\n");
+        for(int i=0;i<len;i++){
+        out->operator<<(data[i]);
+        out->operator<<("\r\n");
+        }
+
         writeBeadCoordinates(_beads,out);
         file->close();
         delete out;

@@ -18,8 +18,10 @@ QT_END_NAMESPACE
 class Physics::MembraneFromObj:public SurfaceWithPhysics
 {
 protected:
-    void capture();
+    void capture(double *data,int len);
 private:
+    const int _NUMSAVEDATA=3;
+    double _saveData[3];
     VecD3d  **_CTSvs1,**_CTSvs2;
     Geometry::BeadInfo **_CTSbeads;
     gsl_matrix *_strainMatrix;
