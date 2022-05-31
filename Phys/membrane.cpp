@@ -139,7 +139,7 @@ Physics::Membrane::Membrane(double dt,double k,Geometry::Plane * p):_dt(dt)
 
 
 
-    loadFromFile();
+    //loadFromFile();
     applyCurvuture();
 }
 bool Physics::Membrane::containInBoundary(QVector<Geometry::Edge*> *ed,Physics::BeadInfo *b ){
@@ -157,7 +157,7 @@ bool Physics::Membrane::containInBoundary(QVector<Geometry::Edge*> *ed,Physics::
 void Physics::Membrane::update(){
 
     if(_steps%10000==0||_capture){
-        capture();
+     //   capture();
     }
 
 

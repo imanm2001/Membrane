@@ -40,68 +40,79 @@ protected:
         }
         out->flush();
     }
-    void loadFromFile(){
+    void loadFromFile(double *data,int len){
 
-        auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
-        std::cout<<s.toStdString()<<std::endl;
-        auto f=new QFile(s);
-        if(f->exists()&&f->open(QIODevice::ReadOnly | QIODevice::Text)){
+           auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
+           std::cout<<s.toStdString()<<std::endl;
+           auto f=new QFile(s);
+           if(f->exists()&&f->open(QIODevice::ReadOnly | QIODevice::Text)){
 
-            auto fins=new QTextStream(f);
-            int s;
-            fins->operator>>(s);
-            assert(s==_beads->size());
-            double x,y,z;
-            for(int i=0;i<_beads->size();i++){
-                auto b=_beads->at(i);
-                fins->operator>>(x);
-                fins->operator>>(y);
-                fins->operator>>(z);
-                b->_coords->setValues(x,y,z);
-            }
-        }
-    }
+               auto fins=new QTextStream(f);
+               int s;
+               fins->operator>>(s);
+               assert(s==_beads->size());
+
+               double x,y,z;
+               for(int i=0;i<_beads->size();i++){
+                   auto b=_beads->at(i);
+                   fins->operator>>(x);
+                   fins->operator>>(y);
+                   fins->operator>>(z);
+                   b->_coords->setValues(x,y,z);
+               }
+               for(int i=0;i<len;i++){
+                   double d;
+                   fins->operator>>(d);
+                   data[i]=d;
+               }
+           }
+       }
     void updateTris(){
         for(int i=0;i<_tris->size();i++){
             _tris->at(i)->getNormal();
         }
     }
-    void capture(){
-        bool error=false;
-        for(int i=0;i<_beads->size();i++){
-            double l=_beads->at(i)->_coords->len();
-            if(l!=l&&l>100){
-                error=true;
-                break;
+    void capture(double *data,int len){
+            bool error=false;
+            for(int i=0;i<_beads->size();i++){
+                double l=_beads->at(i)->_coords->len();
+                if(l!=l&&l>100){
+                    error=true;
+                    break;
+                }
             }
-        }
-        if(!error){
-        //auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape\Shape_force_%1.txt)").arg(QUuid::createUuid().toString());
-        //auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape\Shape_force_%1_%2.txt)").arg(QString::number(force),QUuid::createUuid().toString());
-        auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
-        std::cout<<s.toStdString()<<std::endl;
-        auto bak=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2_bak.txt)").arg(*_shape,*_title);
+            if(!error){
+            //auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape\Shape_force_%1.txt)").arg(QUuid::createUuid().toString());
+            //auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape\Shape_force_%1_%2.txt)").arg(QString::number(force),QUuid::createUuid().toString());
+            auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2.txt)").arg(*_shape, *_title);
+            std::cout<<s.toStdString()<<std::endl;
+            auto bak=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2_bak.txt)").arg(*_shape,*_title);
 
 
 
-        if (QFile::exists(s))
-        {
-            if(QFile::exists(bak)){
-                QFile::remove(bak);
+            if (QFile::exists(s))
+            {
+                if(QFile::exists(bak)){
+                    QFile::remove(bak);
+                }
+                QFile::copy(s,bak);
             }
-            QFile::copy(s,bak);
-        }
-        auto file=new QFile(s);
+            auto file=new QFile(s);
 
 
-        if (!file->open(QIODevice::WriteOnly | QIODevice::Text)){
-            assert(0)   ;
-            return;
-        }
-        auto out=new QTextStream(file);
-        out->operator<<(_beads->size());
-        out->operator<<("\r\n");
+            if (!file->open(QIODevice::WriteOnly | QIODevice::Text)){
+                assert(0)   ;
+                return;
+            }
+            auto out=new QTextStream(file);
+            out->operator<<(_beads->size());
+            out->operator<<("\r\n");
+
         writeBeadCoordinates(_beads,out);
+        for(int i=0;i<len;i++){
+        out->operator<<(data[i]);
+        out->operator<<("\r\n");
+        }
         file->close();
         delete out;
         }

@@ -38,7 +38,8 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     }else{
         _radialForce=25*res;
     }
-    _radialForce=-0;
+       _saveData[0]=_step;
+
     _Rind=4;
     _cb=nullptr;
     _kappaFactor=1;
@@ -163,7 +164,9 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
 
     }
     std::cout<<r/_beads->size()<<std::endl;
-    loadFromFile();
+    loadFromFile(_saveData,_NUMSAVEDATA);
+       _pstep=_step=_saveData[0];
+
 
     if(_xprofile->size()>0){
         auto bb=_xprofile->at(9);
@@ -963,7 +966,9 @@ void Physics::MembraneFromObj::update(){
         if(_step==1000){
             _ptension=_tension;
         }
-        capture();
+        _saveData[0]=_step;
+
+              capture(_saveData,_NUMSAVEDATA);
         double mRdis=-1;
         for(int i=0;i<_xprofile->size();i++){
             auto b=_xprofile->at(i);
@@ -1057,8 +1062,8 @@ void Physics::MembraneFromObj::update(){
 Qt3DRender::QGeometryRenderer* Physics::MembraneFromObj::mesh(){
     return _disc->mesh();
 }
-void Physics::MembraneFromObj::capture(){
-    SurfaceWithPhysics::capture();
+void Physics::MembraneFromObj::capture(double *data,int len){
+    SurfaceWithPhysics::capture(data,len);
     //QString numb=QString::number(_step/1000);
     //auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_profile_%2_%3.txt)").arg(*_shape,*_title,numb);
     auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_profile_%2.txt)").arg(*_shape,*_title);
