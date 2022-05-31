@@ -661,9 +661,12 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     double tA=0;
     double BE=0,SE=0;
     double NR=_THRESHOLD*_radiusFactor;
-    int t=(_step%3000)<100;
-    bool thermal=t>10&&t<40;;
+    int t=(_step%1000);
+    bool thermal=t>100&&t<800;;
+    thermal=1;
     double dts=0;
+
+
 
     if(thermal){
         dts=std::sqrt(dt);
@@ -1056,8 +1059,9 @@ Qt3DRender::QGeometryRenderer* Physics::MembraneFromObj::mesh(){
 }
 void Physics::MembraneFromObj::capture(){
     SurfaceWithPhysics::capture();
-    QString numb=QString::number(_step/1000);
-    auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_profile_%2_%3.txt)").arg(*_shape,*_title,numb);
+    //QString numb=QString::number(_step/1000);
+    //auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_profile_%2_%3.txt)").arg(*_shape,*_title,numb);
+    auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_profile_%2.txt)").arg(*_shape,*_title);
 
     auto file=new QFile(s);
 
