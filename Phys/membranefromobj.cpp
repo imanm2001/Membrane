@@ -11,7 +11,7 @@
 
 #define _DT 3e-6
 
-Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55),_pstep(0)
+Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55),_pstep(0),_INIT(0)
 {
     _dtF=1;
     _tempTri=new Geometry::Triangle(this,12345,new Geometry::BeadInfo(this,new VecD3d(1,1,0),1,0),new Geometry::BeadInfo(this,new VecD3d(1,0,0),1,1),new Geometry::BeadInfo(this,new VecD3d(0,1,0),1,2),0);
@@ -38,7 +38,8 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     }else{
         _radialForce=25*res;
     }
-       _saveData[0]=_step;
+       _saveData[0]=0;
+       _saveData[1]=0;
 
     _Rind=4;
     _cb=nullptr;
@@ -165,9 +166,13 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     }
     std::cout<<r/_beads->size()<<std::endl;
     loadFromFile(_saveData,_NUMSAVEDATA);
-       _pstep=_step=_saveData[0];
-
-
+       _radialForce=_saveData[0];
+       _pstep=_step=(int)_saveData[1];
+        std::cout<<"************************************************"<<std::endl;
+        std::cout<<"****\tApplied Force:\t"<<_appliedF<<"\t\t****"<<std::endl;
+        std::cout<<"****\tRadial Force:\t"<<_radialForce<<"\t****"<<std::endl;
+        std::cout<<"****\tStep:\t\t"<<_step<<"\t\t****"<<std::endl;
+        std::cout<<"************************************************"<<std::endl;
     if(_xprofile->size()>0){
         auto bb=_xprofile->at(9);
 
@@ -664,7 +669,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     double tA=0;
     double BE=0,SE=0;
     double NR=_THRESHOLD*_radiusFactor;
-    int t=(_step%1000);
+    int t=(_step%1000)&_INIT;
     bool thermal=t>100&&t<800;;
     thermal=1;
     double dts=0;
@@ -695,7 +700,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     }
 
     double totalBE=0,KE=0;
-    for(int i=0;_step>0&&i<_disc->_beads->size();i++){
+    for(int i=0;_INIT&&i<_disc->_beads->size();i++){
         auto b=_disc->_beads->at(i);
         BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
         double l=b->_coords->len();
@@ -950,7 +955,7 @@ void Physics::MembraneFromObj::update(){
         _radiusFactor=1;
     }
 
-    if(_step%1000==0||_capture){
+    if(_step%1000==0||_capture||!_INIT){
         double cR=-1;
         for(int i=0;i<_xprofile->size();i++){
             auto b=_xprofile->at(i);
@@ -966,9 +971,7 @@ void Physics::MembraneFromObj::update(){
         if(_step==1000){
             _ptension=_tension;
         }
-        _saveData[0]=_step;
 
-              capture(_saveData,_NUMSAVEDATA);
         double mRdis=-1;
         for(int i=0;i<_xprofile->size();i++){
             auto b=_xprofile->at(i);
@@ -1005,7 +1008,7 @@ void Physics::MembraneFromObj::update(){
                 _appliedF+=10;
                 _appliedF=std::fmin(_appliedF,_F);
             }
-            if(_step>100){
+            if(_step-_pstep>100){
                 _radialForce-=((_tension-_ptension)*0.1+(2e-2)*(_tension))*(_step-_pstep)*_DT*1e3;
 
                 _ptension=_tension;
@@ -1044,6 +1047,9 @@ void Physics::MembraneFromObj::update(){
         //std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_border->at(0)->_coords->len()<<"\t"<< _kappaFactor<<"_"<<mRdis<<"\t"<<_Rind<<"\t"<<_radialForce<<std::endl;
         std::cout<<"STEP:"<<_step<<std::endl;
         std::cout.flush();
+        _saveData[0]=_radialForce;
+        _saveData[1]=_step;
+        capture(_saveData,_NUMSAVEDATA);
     }
     //std::exit(-1);
     /*
@@ -1055,7 +1061,7 @@ void Physics::MembraneFromObj::update(){
     }*/
 
     //MC();
-
+    _INIT=1;
     _step++;
 }
 
