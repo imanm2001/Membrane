@@ -7,11 +7,11 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 437
+#define _F 438
 
 #define _DT 3e-6
 
-Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(0),_frad(55)
+Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(0),_frad(55),_INIT(0)
 {
     _dtF=1;
     _tempTri=new Geometry::Triangle(this,12345,new Geometry::BeadInfo(this,new VecD3d(1,1,0),1,0),new Geometry::BeadInfo(this,new VecD3d(1,0,0),1,1),new Geometry::BeadInfo(this,new VecD3d(0,1,0),1,2),0);
@@ -173,8 +173,9 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     std::cout<<r/_beads->size()<<std::endl;
     loadFromFile(_saveData,_NUMSAVEDATA);
     _appliedF=_saveData[0];
-    _radialForce=_saveData[1];
-    _pstep=_step=_saveData[2];
+    _pstep=_step=_saveData[1];
+    _radialForce=_saveData[2];
+
 
     if(_xprofile->size()>0){
         auto bb=_xprofile->at(9);
@@ -703,7 +704,7 @@ void Physics::MembraneFromObj:: updateBeads(QVector<Geometry::BeadInfo*> *beads,
     }
 
     double totalBE=0,KE=0;
-    for(int i=0;_step>0&&i<_disc->_beads->size();i++){
+    for(int i=0;_INIT&&i<_disc->_beads->size();i++){
         auto b=_disc->_beads->at(i);
         BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
         double l=b->_coords->len();
@@ -978,8 +979,9 @@ void Physics::MembraneFromObj::update(){
             _ptension=_tension;
         }
         _saveData[0]=_appliedF;
-        _saveData[1]=_radialForce;
-        _saveData[2]=_step;
+        _saveData[1]=_step;
+        _saveData[2]=_radialForce;
+
         capture(_saveData,_NUMSAVEDATA);
         double mRdis=-1;
         for(int i=0;i<_xprofile->size();i++){
@@ -1047,7 +1049,7 @@ void Physics::MembraneFromObj::update(){
 
 
             double dy=_cb->_coords->_coords[1]-_py;
-            if(_step%1000==0){
+            if(_step%1000==0||!_INIT){
                 auto fileN=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_%2_FvT.txt)").arg(*_shape,*_title);
                 if(_step==1000){
 
@@ -1125,6 +1127,7 @@ void Physics::MembraneFromObj::update(){
     //MC();
 
     _step++;
+    _INIT=1;
 }
 
 Qt3DRender::QGeometryRenderer* Physics::MembraneFromObj::mesh(){

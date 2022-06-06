@@ -20,6 +20,7 @@ class Physics::MembraneFromObj:public SurfaceWithPhysics
 protected:
     void capture(double *data,int len);
 private:
+    int _INIT;
     const int _NUMSAVEDATA=3;
     double _saveData[3];
     VecD3d  **_CTSvs1,**_CTSvs2;
