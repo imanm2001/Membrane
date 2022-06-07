@@ -1042,7 +1042,7 @@ void Physics::MembraneFromObj::update(){
         _tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))*cR/mRdis;;
         */
         std::cout<<"TEN:"<<_THRESHOLD*_radiusFactor<<"\t"<<_maxR<<"\t"<<_initalArea<<"...\tSS:  "<<strain<<"\t"<<param<<" ten\t"<<_tension<<"\t"<<_kappaFactor<<"\t"<<_kappa<<"\t"<<_radiusFactor<<std::endl;
-        std::cout<<"rForce"<<_radialForce<<std::endl;
+        std::cout<<"rForce"<<_radialForce<<"\t"<<_appliedF<<std::endl;
         //std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_border->at(0)->_coords->len()<<"\t"<< _kappaFactor<<"_"<<mRdis<<"\t"<<bb->_coords->_coords[0]<<"\t"<<_Rind<<"\t"<<_radialForce<<std::endl;
         //std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_border->at(0)->_coords->len()<<"\t"<< _kappaFactor<<"_"<<mRdis<<"\t"<<_Rind<<"\t"<<_radialForce<<std::endl;
         std::cout<<"STEP:"<<_step<<std::endl;
