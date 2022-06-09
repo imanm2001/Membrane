@@ -50,14 +50,14 @@ void Physics::VecD3d::zero(){
     _coords[0]=_coords[1]=_coords[2]=0;
 }
 void Physics::VecD3d::add(double dx,double dy,double dz){
-_coords[0]+=dx;
-_coords[1]+=dy;
-_coords[2]+=dz;
+    _coords[0]+=dx;
+    _coords[1]+=dy;
+    _coords[2]+=dz;
 }
 void Physics::VecD3d::sub(double dx,double dy,double dz){
-_coords[0]-=dx;
-_coords[1]-=dy;
-_coords[2]-=dz;
+    _coords[0]-=dx;
+    _coords[1]-=dy;
+    _coords[2]-=dz;
 }
 void Physics::VecD3d::sub(Physics::VecD3d *v){
     _coords[0]-=v->_coords[0];
@@ -93,7 +93,13 @@ void Physics::VecD3d::setValues(double x,double y,double z){
     _coords[2]=z;
 }
 void Physics::VecD3d::debug(){
+    /*
     assert(_coords[0]==_coords[0]);
     assert(_coords[1]==_coords[1]);
     assert(_coords[2]==_coords[2]);
+    */
+
+    IERROR(_coords[0]==_coords[0]);
+    IERROR(_coords[1]==_coords[1]);
+    IERROR(_coords[2]==_coords[2]);
 }

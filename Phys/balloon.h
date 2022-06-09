@@ -32,6 +32,7 @@ public:
     void updateVIN();
     double calE();
     double calE(int);
+    void INIT();
 };
 
 #endif // BALLOON_H

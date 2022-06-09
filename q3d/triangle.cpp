@@ -27,11 +27,14 @@ Geometry::Triangle::Triangle(QObject* p,int id,Geometry::Edge *e1,Geometry::Edge
     _norm=new VecD3d();
     getNormal();
     setOrginals();
-
+/*
     assert(_v[0]->_coords->len()!=0);
     assert(_v[1]->_coords->len()!=0);
-    assert(_v[2]->_coords->len()!=0);
+    assert(_v[2]->_coords->len()!=0);*/
 
+    IERROR(_v[0]->_coords->len()!=0);
+    IERROR(_v[1]->_coords->len()!=0);
+    IERROR(_v[2]->_coords->len()!=0);
     /*
     if(getNormal()._coords[2]<0){
         auto vt=v2;

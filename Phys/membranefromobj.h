@@ -57,7 +57,7 @@ public:
     double calStrain2D2();
     void calRect(VecD3d**,double*,double*);
     void Project2D(VecD3d**,VecD3d*,VecD3d*,VecD3d*);
-
+    void INIT();
 
 
 };

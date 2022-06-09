@@ -45,11 +45,16 @@ double Physics::BendingEnergy::getChi(int j1,int j2){
         bijpm->_dxP->print();
         std::cout<<"----"<<std::endl;
         std::cout.flush();
-        assert(0);
+        //assert(0);
+        IERROR(0);
 
     }
+    /*
     assert(tt==tt);
     assert(!isinf(tt));
+    */
+    IERROR(tt==tt);
+    IERROR(!isinf(tt));
 
     return tt;
 }
@@ -154,8 +159,11 @@ void Physics::BendingEnergy::updateBendingParameters(){
             chi2=(1-1e-4)*(chi2>0?1:-1);
             std::cout<<"CHI2"<<chi1<<"\t"<<chi2<<"\t"<<_border<<std::endl;
         }
+        /*
         assert(chi1*chi1<1);
-        assert(chi2*chi2<1);
+        assert(chi2*chi2<1);*/
+        IERROR(chi1*chi1<1);
+        IERROR(chi2*chi2<1);
         /*
         double cd1=std::sqrt(1-chi1*chi1);
         double cd2=std::sqrt(1-chi2*chi2);
@@ -202,9 +210,11 @@ void Physics::BendingEnergy::updateBendingParameters(){
     //_Av=_Av/8.0;
     //Av2/=8.0;
 
-
+/*
     assert(_Av==_Av);
-    assert(_Av!=0);
+    assert(_Av!=0);*/
+    IERROR(_Av==_Av);
+    IERROR(_Av!=0);
     _Avs=_Av*_Av;
     _LB->setValues(_v1);
     _v1->debug();
@@ -214,7 +224,8 @@ void Physics::BendingEnergy::updateBendingParameters(){
     if(dn!=dn){
         qDebug()<<_Av;
     }
-    assert(dn==dn);
+    //assert(dn==dn);
+    IERROR(dn==dn);
     _A->zero();
     double Kg=2*3.14159265359;
     for(int j=0;j<size;j++){
@@ -223,8 +234,12 @@ void Physics::BendingEnergy::updateBendingParameters(){
         auto bp2=_bi->_bendingParameters->at(jp);
         bp1->_phi=std::acos(bp1->_dxP->dot(bp2->_dxP)/(bp1->_l*bp2->_l));
         Kg-=bp1->_phi;
+        /*
         assert(bp1->_phi!=0);
         assert(bp1->_normal!=nullptr);
+        */
+        IERROR(bp1->_phi!=0);
+        IERROR(bp1->_normal!=nullptr);
         _temp1->setValues(bp1->_normal);
         _temp1->multConst(bp1->_phi);
         _A->add(_temp1);
@@ -388,7 +403,8 @@ void Physics::BendingEnergy::TP(int l,int j,Physics::VecD3d *temp,Physics::VecD3
     auto bp= _bi->_bendingParameters->at(j);
 
     double t1=(1-bp->chiM*bp->chiM);
-    assert(t1>0);
+    //assert(t1>0);
+    IERROR(t1>0)
     t1=std::sqrt(t1*t1*t1);
     chiP(l,j,fixIndex(j-1,_bi->_connections),temp,temp2);
     temp2->multConst(1.0/t1);
@@ -407,7 +423,8 @@ void Physics::BendingEnergy::TP1(int l,int j,Physics::VecD3d *temp,Physics::VecD
     auto bp= _bi->_bendingParameters->at(j);
 
     double t1=(1-bp->chiP*bp->chiP);
-    assert(t1>0);
+    //assert(t1>0);
+    IERROR(t1>0);
     t1=std::sqrt(t1*t1*t1);
     chiP(l,j,fixIndex(j+1,_bi->_connections),temp,ret);
     ret->multConst(1.0/t1);
@@ -421,7 +438,8 @@ void Physics::BendingEnergy::TP2(int l,int j,Physics::VecD3d *temp,Physics::VecD
     auto bp= _bi->_bendingParameters->at(jp);
 
     double t1=(1-bp->chiM*bp->chiM);
-    assert(t1>0);
+    //assert(t1>0);
+    IERROR(t1>0);
     t1=std::sqrt(t1*t1*t1);
     chiP(l,jp,j,temp,ret);
     ret->multConst(1.0/t1);
@@ -467,10 +485,16 @@ void Physics::BendingEnergy::chiP(int l,int j,int m,Physics::VecD3d *temp,Physic
     }
     ret->multConst(1.0/(ljm*lim));
 
-    assert(ljm!=0);
+    /*assert(ljm!=0);
     assert(lim!=0);
     assert(lim==lim);
-    assert(ljm==ljm);
+    assert(ljm==ljm);*/
+
+    IERROR(ljm!=0);
+    IERROR(lim!=0);
+    IERROR(lim==lim);
+    IERROR(ljm==ljm);
+
     ret->debug();
 }
 void Physics::BendingEnergy::Ep(int l,VecD3d * ret){
@@ -1057,16 +1081,22 @@ void Physics::BendingEnergy::PhiP(int l,int j,int j2,Physics::VecD3d* t1,Physics
     double t=dot/(bp1->_l*bp2->_l);
 
     t*=t;
+    /*
     assert(t==t);
-    assert(t<1);
+    assert(t<1);*/
+    IERROR(t==t);
+    IERROR(t<1);
     t=std::sqrt(1-t);
     double denum=bp1->_lsq*bp2->_lsq*t;
     if(denum==0){
         bp1->_dxP->print();
         bp2->_dxP->print();
     }
+    /*
     assert(denum==denum);
-    assert(denum>0);
+    assert(denum>0);*/
+    IERROR(denum==denum);
+    IERROR(denum>0);
     ret->zero();
     if(l==-1){
         t1->setValues(bp1->_dxP);

@@ -1,14 +1,17 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "utils/classes.h"
 #include <QMainWindow>
 #include <QListWidgetItem>
 #include <q3d/triangle.h>
 #include <q3d/edge.h>
 #include <QShowEvent>
 #include <QtCore>
+
 #include "Phys/membrane.h"
 #include "utils/mthread.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE

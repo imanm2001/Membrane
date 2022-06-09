@@ -43,6 +43,7 @@ Physics::Balloon::Balloon(double dt):SurfaceWithPhysics(),_dt(dt)
     _beads=_sphere->_beads;
     allocMem();
 }
+void Physics::Balloon::INIT(){}
 Qt3DRender::QGeometryRenderer * Physics::Balloon::mesh(){
     return _sphere->mesh();
 }

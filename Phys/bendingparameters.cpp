@@ -27,8 +27,14 @@ void Physics::BendingParameters::update(Physics::BeadInfo* bj){
         bj->_coords->print();
         std::cout<<_l<<std::endl;
     }
+    /*
     assert(_l>0);
     assert(_l==_l);
-    assert(!isinf(_l));
+    assert(!isinf(_l));*/
+    IERROR(_l>0);
+    IERROR(_l==_l);
+    IERROR(!isinf(_l));
+
+
 }
 

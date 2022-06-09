@@ -29,6 +29,7 @@ SOURCES += \
         q3d/q3dwidget.cpp \
         q3d/triangle.cpp \
         q3d/wavefrontobj.cpp \
+        utils/classes.cpp \
         utils/mthread.cpp
 
 # Default rules for deployment.

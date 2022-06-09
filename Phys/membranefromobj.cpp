@@ -7,7 +7,7 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 6500
+#define _F 3001
 
 #define _DT 3e-6
 
@@ -165,6 +165,13 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
 
     }
     std::cout<<r/_beads->size()<<std::endl;
+    INIT();
+
+    std::cout<<":::"<<_TIE<<std::endl;
+}
+void Physics::MembraneFromObj::INIT(){
+    _INIT=0;
+    std::cout<<"---------------------"<<std::endl;
     loadFromFile(_saveData,_NUMSAVEDATA);
        _radialForce=_saveData[0];
        _pstep=_step=(int)_saveData[1];
@@ -195,8 +202,6 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
         be->updateBendingParameters();
 
     }
-
-    std::cout<<":::"<<_TIE<<std::endl;
 }
 void Physics::MembraneFromObj::findThefourthVertex(Geometry::Triangle* t1,Geometry::Triangle* t2,Geometry::BeadInfo** bi){
     std::copy(t1->_v,t1->_v+3,bi);

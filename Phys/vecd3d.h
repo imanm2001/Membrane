@@ -1,6 +1,7 @@
 #ifndef VECD3D_H
 #define VECD3D_H
 #define det(x1,x2,y1,y2) x1*y2-x2*y1
+#include "utils/classes.h"
 #include <math.h>
 #include <QVector3D>
 #include <iostream>

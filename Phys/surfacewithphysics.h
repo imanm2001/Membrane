@@ -15,7 +15,7 @@ namespace Physics {
 class SurfaceWithPhysics;
 }
 QT_END_NAMESPACE
-class Physics::SurfaceWithPhysics:public QObject{
+class Physics::SurfaceWithPhysics:public QObject,Debuggable {
 protected:
     QString *_title;
     QString *_shape;
@@ -135,6 +135,7 @@ public:
     virtual void updateVIN()=0;
     virtual double calE()=0;
     virtual double calE(int)=0;
+
     virtual QString getTitle(){
         return *_title;
     }

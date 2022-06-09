@@ -25,7 +25,11 @@ void MainWindow::focusCamera(bool b){
 void MainWindow::showEvent(QShowEvent *)
 {
     if(!_init){
+
         ui->widget3D->init();
+        Physics::SIM=(Physics::Debuggable*) ui->widget3D->_mesh;
+        IERROR(0);
+
 
         /*for(int i=0;i<ui->widget3D->_plan->_tris.size();i++){
             ui->listWidget->addItem(QString::number(i));
