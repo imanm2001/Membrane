@@ -7,7 +7,7 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 439
+#define _F 450
 
 #define _DT 3e-6
 
@@ -938,8 +938,8 @@ void Physics::MembraneFromObj:: updateBeads(QVector<Geometry::BeadInfo*> *beads,
 
 }
 void Physics::MembraneFromObj::update(){
-    _appliedF=fmin(fmax(_F, _appliedF+_APFA),800);
-    _radialForce=fmax(-1000,fmin(_radialForce+_RFA,0));
+    _appliedF=fmin(fmax(_F, _appliedF+_APFA),500);
+    _radialForce=fmax(-10000,fmin(_radialForce+_RFA,0));
 
     double p=_P;
     double kappa=_kappa;
