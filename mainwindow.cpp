@@ -28,7 +28,7 @@ void MainWindow::showEvent(QShowEvent *)
 
         ui->widget3D->init();
         Physics::SIM=(Physics::Debuggable*) ui->widget3D->_mesh;
-        IERROR(0);
+
 
 
         /*for(int i=0;i<ui->widget3D->_plan->_tris.size();i++){

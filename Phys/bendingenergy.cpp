@@ -46,15 +46,15 @@ double Physics::BendingEnergy::getChi(int j1,int j2){
         std::cout<<"----"<<std::endl;
         std::cout.flush();
         //assert(0);
-        IERROR(0);
+        IERRORD(0);
 
     }
     /*
     assert(tt==tt);
     assert(!isinf(tt));
     */
-    IERROR(tt==tt);
-    IERROR(!isinf(tt));
+    IERRORD(tt==tt);
+    IERRORD(!isinf(tt));
 
     return tt;
 }

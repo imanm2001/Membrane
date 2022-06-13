@@ -7,11 +7,11 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 3001
+#define _F 4001
 
 #define _DT 3e-6
 
-Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55),_pstep(0),_INIT(0)
+Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55),_pstep(0),_INIT(0),_RESET(0)
 {
     _dtF=1;
     _tempTri=new Geometry::Triangle(this,12345,new Geometry::BeadInfo(this,new VecD3d(1,1,0),1,0),new Geometry::BeadInfo(this,new VecD3d(1,0,0),1,1),new Geometry::BeadInfo(this,new VecD3d(0,1,0),1,2),0);
@@ -165,12 +165,16 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
 
     }
     std::cout<<r/_beads->size()<<std::endl;
-    INIT();
+    RESET();
 
     std::cout<<":::"<<_TIE<<std::endl;
 }
 void Physics::MembraneFromObj::INIT(){
+    _RESET=1;
+}
+void Physics::MembraneFromObj::RESET(){
     _INIT=0;
+    _RESET=0;
     std::cout<<"---------------------"<<std::endl;
     loadFromFile(_saveData,_NUMSAVEDATA);
        _radialForce=_saveData[0];
@@ -674,7 +678,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     double tA=0;
     double BE=0,SE=0;
     double NR=_THRESHOLD*_radiusFactor;
-    int t=(_step%1000)&_INIT;
+    int t=(_step%5000)&_INIT;
     bool thermal=t>100&&t<800;;
     thermal=1;
     double dts=0;
@@ -684,7 +688,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     if(thermal){
         dts=std::sqrt(dt);
     }
-    for(int i=0;i<_disc->_beads->size();i++){
+    for(int i=0;i<_disc->_beads->size()&&!_RESET;i++){
         auto b=_disc->_beads->at(i);
 
         BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
@@ -705,7 +709,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     }
 
     double totalBE=0,KE=0;
-    for(int i=0;_INIT&&i<_disc->_beads->size();i++){
+    for(int i=0;_INIT&&i<_disc->_beads->size()&&!_RESET;i++){
         auto b=_disc->_beads->at(i);
         BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
         double l=b->_coords->len();
@@ -732,7 +736,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 
 
     int N=0;
-    for(int i=0;i<_disc->_edges->size();i++){
+    for(int i=0;i<_disc->_edges->size()&&!_RESET;i++){
         auto edge=_disc->_edges->at(i);
         edge->location(_temp);
         double r=_temp->len();
@@ -761,7 +765,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     N=beads->size();
 
     double fixedBoundary=0;
-    for(int i=0;i<beads->size();i++){
+    for(int i=0;i<beads->size()&&!_RESET;i++){
         auto b=beads->at(i);
         BendingEnergy *be=(BendingEnergy *)b->getAttribute(BENDINGENERGY);
         double l=b->_coords->len();
@@ -818,7 +822,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     _temp2->zero();
     double ten=0,ten2=0,ten3=0;
 
-    for(int i=0;i<beads->size();i++){
+    for(int i=0;i<beads->size()&&!_RESET;i++){
         auto b=beads->at(i);
         double r=b->_coords->len();
         if(b!=_cb&&r<NR){
@@ -858,7 +862,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     double minF=0;
 
     _temp->zero();
-    for(int i=0;i<_border->size();i++){
+    for(int i=0;i<_border->size()&&!_RESET;i++){
         auto b=_border->at(i);
         double r=b->_coords->len();
         b->_coords->_coords[1]=b->_force->_coords[1]=0;
@@ -937,7 +941,9 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 
 }
 void Physics::MembraneFromObj::update(){
-
+    if(_RESET){
+        RESET();
+    }
     double p=_P;
     double kappa=_kappa;
     //_tet->_scale=0.2*std::exp(-_step/100.0)+0.9;

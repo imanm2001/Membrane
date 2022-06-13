@@ -46,7 +46,16 @@ extern Debuggable *SIM;
         std::cout<<"ERROR:\t"<<#arg<<std::endl;\
         std::cout<<__FILE__<<"\t:"<<__LINE__<<std::endl;\
         Physics::SIM->INIT();\
+        return;\
     }
+#define IERRORD(arg) \
+    if ((arg)==0){ \
+        std::cout<<"ERROR:\t"<<#arg<<std::endl;\
+        std::cout<<__FILE__<<"\t:"<<__LINE__<<std::endl;\
+        Physics::SIM->INIT();\
+        return 0;\
+    }
+
 namespace Geometry {
 class QBoolean:QObject{
 

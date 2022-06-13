@@ -20,7 +20,7 @@ class Physics::MembraneFromObj:public SurfaceWithPhysics
 protected:
     void capture(double *,int);
 private:
-    int _INIT;
+    int _INIT,_RESET;
     const static int _NUMSAVEDATA=2;
     double _saveData[_NUMSAVEDATA];
     VecD3d  **_CTSvs1,**_CTSvs2;
@@ -58,6 +58,7 @@ public:
     void calRect(VecD3d**,double*,double*);
     void Project2D(VecD3d**,VecD3d*,VecD3d*,VecD3d*);
     void INIT();
+    void RESET();
 
 
 };
