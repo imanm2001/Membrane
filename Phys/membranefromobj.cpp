@@ -7,7 +7,7 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 4001
+#define _F 5001
 
 #define _DT 3e-6
 
@@ -678,7 +678,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     double tA=0;
     double BE=0,SE=0;
     double NR=_THRESHOLD*_radiusFactor;
-    int t=(_step%5000)&_INIT;
+    int t=(_step%10000)&_INIT;
     bool thermal=t>100&&t<800;;
     thermal=1;
     double dts=0;
@@ -1020,7 +1020,7 @@ void Physics::MembraneFromObj::update(){
                 _appliedF=std::fmin(_appliedF,_F);
             }
             if(_step-_pstep>100){
-                _radialForce-=((_tension-_ptension)*0.1+(2e-2)*(_tension))*(_step-_pstep)*_DT*1e3;
+                _radialForce-=((_tension-_ptension)*0.1+(2e-2)*(_tension))*(_step-_pstep)*_DT*1e2;
 
                 _ptension=_tension;
             }
