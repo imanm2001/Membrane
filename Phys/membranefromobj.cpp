@@ -11,7 +11,7 @@
 
 #define _DT 3e-6
 
-Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55),_pstep(0),_INIT(0),_RESET(0)
+Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(3201),_py(500),_frad(55),_pstep(0),_INIT(0),_RESET(0)
 {
     _dtF=1;
     _tempTri=new Geometry::Triangle(this,12345,new Geometry::BeadInfo(this,new VecD3d(1,1,0),1,0),new Geometry::BeadInfo(this,new VecD3d(1,0,0),1,1),new Geometry::BeadInfo(this,new VecD3d(0,1,0),1,2),0);
@@ -680,7 +680,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     double NR=_THRESHOLD*_radiusFactor;
     int t=(_step%10000)&_INIT;
     bool thermal=t>100&&t<300;;
-    thermal=1;
+    //thermal=1;
     double dts=0;
 
 
@@ -941,6 +941,9 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 
 }
 void Physics::MembraneFromObj::update(){
+    if(_appliedF<_F&&_tension<10){
+        _appliedF+=1e-2;
+    }
     if(_RESET){
         RESET();
     }
@@ -1015,12 +1018,13 @@ void Physics::MembraneFromObj::update(){
                 //_sf->_k*=0.99;
             }
             _cb->_coords->print();
-            if(_cb->_coords->_coords[1]-_py<1&&_appliedF<_F){
+            /*
+            if(_cb->_coords->_coords[1]-_py<1&&_appliedF<_F&&_tension<10){
                 _appliedF+=10;
                 _appliedF=std::fmin(_appliedF,_F);
-            }
+            }*/
             if(_step-_pstep>100){
-                _radialForce-=((_tension-_ptension)*0.1+(2e-2)*(_tension))*(_step-_pstep)*_DT*1e1;
+                _radialForce-=((_tension-_ptension)*0.1+(2e-2)*(_tension))*(_step-_pstep)*_DT*2.5e1;
 
                 _ptension=_tension;
             }
