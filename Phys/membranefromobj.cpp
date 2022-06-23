@@ -11,7 +11,7 @@
 
 #define _DT 3e-6
 
-Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(3201),_py(500),_frad(55),_pstep(0),_INIT(0),_RESET(0)
+Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(_F),_py(500),_frad(55),_pstep(0),_INIT(0),_RESET(0)
 {
     _dtF=1;
     _tempTri=new Geometry::Triangle(this,12345,new Geometry::BeadInfo(this,new VecD3d(1,1,0),1,0),new Geometry::BeadInfo(this,new VecD3d(1,0,0),1,1),new Geometry::BeadInfo(this,new VecD3d(0,1,0),1,2),0);
