@@ -21,7 +21,7 @@ protected:
     void capture(double *,int);
 private:
     int _INIT,_RESET;
-    const static int _NUMSAVEDATA=2;
+    const static int _NUMSAVEDATA=3;
     double _saveData[_NUMSAVEDATA];
     VecD3d  **_CTSvs1,**_CTSvs2;
     Geometry::BeadInfo **_CTSbeads;

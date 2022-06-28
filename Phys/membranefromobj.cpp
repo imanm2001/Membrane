@@ -7,11 +7,11 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 4100
+#define _F 3500
 
 #define _DT 3e-6
 
-Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(3001),_py(500),_frad(55),_pstep(0),_INIT(0),_RESET(0)
+Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(0),_py(500),_frad(55),_pstep(0),_INIT(0),_RESET(0)
 {
     _dtF=1;
     _tempTri=new Geometry::Triangle(this,12345,new Geometry::BeadInfo(this,new VecD3d(1,1,0),1,0),new Geometry::BeadInfo(this,new VecD3d(1,0,0),1,1),new Geometry::BeadInfo(this,new VecD3d(0,1,0),1,2),0);
@@ -40,6 +40,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
     }
        _saveData[0]=0;
        _saveData[1]=0;
+       _saveData[2]=0;
 
     _Rind=4;
     _cb=nullptr;
@@ -179,6 +180,7 @@ void Physics::MembraneFromObj::RESET(){
     loadFromFile(_saveData,_NUMSAVEDATA);
        _radialForce=_saveData[0];
        _pstep=_step=(int)_saveData[1];
+        _appliedF=_saveData[2];
         std::cout<<"************************************************"<<std::endl;
         std::cout<<"****\tApplied Force:\t"<<_appliedF<<"\t\t****"<<std::endl;
         std::cout<<"****\tRadial Force:\t"<<_radialForce<<"\t****"<<std::endl;
@@ -942,7 +944,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 }
 void Physics::MembraneFromObj::update(){
     if(_appliedF<_F&&_tension<10){
-        _appliedF+=1e-2;
+        _appliedF+=3e-2;
     }
     if(_RESET){
         RESET();
@@ -1024,7 +1026,7 @@ void Physics::MembraneFromObj::update(){
                 _appliedF=std::fmin(_appliedF,_F);
             }*/
             if(_step-_pstep>100){
-                _radialForce-=((_tension-_ptension)*0.1+(2e-2)*(_tension))*(_step-_pstep)*_DT*1e4;
+                _radialForce-=fmax(-10,fmin(10,((_tension-_ptension)*0.1+(2e-2)*(_tension))*(_step-_pstep)*_DT*3e4));
 
                 _ptension=_tension;
             }
@@ -1064,6 +1066,7 @@ void Physics::MembraneFromObj::update(){
         std::cout.flush();
         _saveData[0]=_radialForce;
         _saveData[1]=_step;
+        _saveData[2]=_appliedF;
         capture(_saveData,_NUMSAVEDATA);
     }
     //std::exit(-1);
