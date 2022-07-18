@@ -10,7 +10,7 @@
 #define _F 453
 
 #define _DT 3e-6
-
+#define _COMPRESSIBLE_ 1
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(0),_frad(55),_INIT(0)
 {
     _dtF=1;
@@ -736,7 +736,16 @@ void Physics::MembraneFromObj:: updateBeads(QVector<Geometry::BeadInfo*> *beads,
         edge->location(_temp);
         double r=_temp->len();
         double e=_sf->eval(edge);
+#ifdef _COMPRESSIBLE_
+        if(e>0.1&&EVAL){
+            double a=0.1,s=1;
 
+            double DR=dist-edge->_restLength*edge->_restLengthScale;
+            double ex=exp((a-e)/s);
+            double sig=2/(ex+1)-1;
+            edge->_restLengthScale=fmax(0.75,fmin(1.25,edge->_restLengthScale+0.001*sig*SIGN(DR)));
+        }
+#endif
         KE+=e;
         if(r<NR){
 
