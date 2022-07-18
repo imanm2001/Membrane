@@ -16,6 +16,7 @@ class Physics::SpringForce
 public:
     double _k;
     SpringForce(double k);
-    double eval(Geometry::Edge *e);
+    double eval(Geometry::Edge *e,double *dist);
+    double calE(Geometry::Edge *e);
 };
 #endif // SPRINGFORCE_H

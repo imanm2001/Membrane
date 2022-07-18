@@ -18,7 +18,7 @@ class Geometry::Edge:public QObject
 {
 
 public:
-    double _restLength,_restLenghtScale;
+    double _restLength,_restLengthScale;
     BeadInfo * _vid1,*_vid2;
     BeadInfo* commonVertex(Edge *e2);
     Geometry::Triangle * _tris[2];

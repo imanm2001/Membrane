@@ -677,6 +677,7 @@ void Physics::MembraneFromObj:: updateBeads(QVector<Geometry::BeadInfo*> *beads,
     double NR=_THRESHOLD*_radiusFactor;
     int t=(_step%10000);
     bool thermal=t>100&&t<800;;
+    bool EVAL=_step%1000==0;
     //thermal=1;
     double dts=0;
 
@@ -735,7 +736,8 @@ void Physics::MembraneFromObj:: updateBeads(QVector<Geometry::BeadInfo*> *beads,
         auto edge=_disc->_edges->at(i);
         edge->location(_temp);
         double r=_temp->len();
-        double e=_sf->eval(edge);
+        double dist=0;
+        double e=_sf->eval(edge,&dist);
 #ifdef _COMPRESSIBLE_
         if(e>0.1&&EVAL){
             double a=0.1,s=1;
@@ -908,7 +910,7 @@ void Physics::MembraneFromObj:: updateBeads(QVector<Geometry::BeadInfo*> *beads,
     //_tension=-(0.0*(-_TIE+BE)-0*totalBE+0*(_sf->_k/_K)*_E*(tA-_initalArea))/((_THRESHOLD*_radiusFactor)*(tA-_initalArea));
 
     //_tension=(-_TIE+BE)*(0.04977764316091744)+(ten2)*(-0.001294612012995185)+(_F*_cb->_coords->_coords[1])*(0.0011541393111540513)+(volumne()*_P)*(0.016966224106566494)+(KE)*(0.024632178160253912)+(SE)*(-0.009050863839029583)+145.84154811364436;
-    if(_step%1000==0){
+    if(EVAL){
         std::cout<<NR<<"\t"<<tA<<"\t"<<_sf->_k<<std::endl;
     }
     if(_step%100==0&&_cb!=nullptr){

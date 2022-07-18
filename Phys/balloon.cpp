@@ -121,7 +121,8 @@ void Physics::Balloon::update(){
     for(int i=0;i<_sphere->_edges->size();i++){
         auto edge=_sphere->_edges->at(i);
       //  edge->_restLength=0.3952;
-        _sf->eval(edge);
+        double dist=0;
+        _sf->eval(edge,&dist);
     }
     double s=_sphere->_beads->size();
     bool upd=_step%100==0;
