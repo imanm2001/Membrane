@@ -1,17 +1,18 @@
 #include "membranefromobj.h"
 
 #define _P 1
-#define _K 50006
+#define _K 50007
 #define _kappa 18522
 //#define _kappa 1
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 3500
+#define _F 460
 
 #define _DT 3e-6
-
-Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(0),_py(500),_frad(55),_pstep(0),_INIT(0),_RESET(0)
+#define _COMPRESSIBLE_ 1
+#define SIGN(x) (x>=0?1:-1)
+Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(-100),_py(500),_frad(55),_pstep(0),_INIT(0),_RESET(0)
 {
     _dtF=1;
     _tempTri=new Geometry::Triangle(this,12345,new Geometry::BeadInfo(this,new VecD3d(1,1,0),1,0),new Geometry::BeadInfo(this,new VecD3d(1,0,0),1,1),new Geometry::BeadInfo(this,new VecD3d(0,1,0),1,2),0);
@@ -154,7 +155,7 @@ Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt
         //b->_coords->multConst(10.0/b->_coords->len());
     }
     R/=_border->size();
-
+    _frad=R;
 
     _pBE=0;
     allocMem();
@@ -684,7 +685,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     bool thermal=t>100&&t<300;;
     //thermal=1;
     double dts=0;
-
+    bool EVAL=_step%1000==0;
 
 
     if(thermal){
@@ -730,21 +731,32 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 
             //    _temp->print();
             b->_force->add(_temp);
-            //BE+=_kappaFactor*_kappa*be->calE();
-            //BE+=kappa*be->calcSig();
+            KE+=_kappaFactor*_kappa*be->calE();
+
         }
     }
 
 
 
     int N=0;
+    SE=0;
     for(int i=0;i<_disc->_edges->size()&&!_RESET;i++){
         auto edge=_disc->_edges->at(i);
         edge->location(_temp);
         double r=_temp->len();
-        double e=_sf->eval(edge);
+        double dist=0;
+        double e=_sf->eval(edge,&dist);
+#ifdef _COMPRESSIBLE_
+        if(e>0.1&&EVAL){
+            double a=0.1,s=1;
 
-        KE+=e;
+            double DR=dist-edge->_restLength*edge->_restLengthScale;
+            double ex=exp((a-e)/s);
+            double sig=2/(ex+1)-1;
+            edge->_restLengthScale=fmax(0.75,fmin(1.25,edge->_restLengthScale+0.001*sig*SIGN(DR)));
+        }
+#endif
+        SE+=e;
         if(r<NR){
 
             BendingEnergy *be=(BendingEnergy *)edge->_vid1->getAttribute(BENDINGENERGY);
@@ -862,11 +874,12 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
 #endif
     }
     double minF=0;
-
+    double mR=0;
     _temp->zero();
     for(int i=0;i<_border->size()&&!_RESET;i++){
         auto b=_border->at(i);
         double r=b->_coords->len();
+        mR+=r;
         b->_coords->_coords[1]=b->_force->_coords[1]=0;
 
         if(r>NR+0.1){
@@ -881,7 +894,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
             b->_force->_coords[0]+=_radialForce*b->_coords->_coords[0]/r;
             b->_force->_coords[2]+=_radialForce*b->_coords->_coords[2]/r;
 
-            SE-=dr*_radialForce;
+            BE+=dr*_radialForce;
             //;
             // if(f>100){
             //   if(std::fabs(_tension)>0.042){
@@ -889,6 +902,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
             //  }
         }
     }
+    mR/=_border->size();
     //   std::cout<<minF<<std::endl;
     //    std::cout<<tA<<std::endl;
     //    _tension=_E*(tA-296.397)/296.397;
@@ -896,24 +910,21 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
     //TENP
     //std::cout<<(_sf->_k/_K)*_E*(tA-_initalArea)<<"\t"<<BE<<"\t"<<volumne()*_P<<"\t"<<_F*_cb->_coords->_coords[1]<<"\t"<<N<<std::endl;
 
-    if(_cb!=nullptr){
 
-        totalBE=(-(-_F*_cb->_coords->_coords[1]+volumne()*_P));
-    }
     // _tension=(_TIE-4*(_sf->_k/_K)*_E*(tA-_initalArea))/(2*_initalArea);
     //_tension=-(0.0*(-_TIE+BE)-0*totalBE+0*(_sf->_k/_K)*_E*(tA-_initalArea))/((_THRESHOLD*_radiusFactor)*(tA-_initalArea));
 
     //_tension=(-_TIE+BE)*(0.04977764316091744)+(ten2)*(-0.001294612012995185)+(_F*_cb->_coords->_coords[1])*(0.0011541393111540513)+(volumne()*_P)*(0.016966224106566494)+(KE)*(0.024632178160253912)+(SE)*(-0.009050863839029583)+145.84154811364436;
-    if(_step%1000==0){
-        std::cout<<NR<<"\t"<<tA<<"\t"<<_sf->_k<<std::endl;
+    if(EVAL){
+        totalBE=volumne()*_P;
+        std::cout<<"FIT"<<std::endl;
+        std::cout<<_F<<"\t"<<NR<<"\t"<<tA<<"\t"<<mR<<"\t"<<SE<<"\t"<<BE<<"\t"<<KE<<"\t"<<totalBE<<"\t"<<_cb->_coords->_coords[1]<<std::endl;
     }
+    /*
     if(_step%100==0&&_cb!=nullptr){
         double W=_F*_cb->_coords->_coords[1];
         double PV=volumne()*_P;
-        /*
-        std::cout<<-_TIE+BE<<"\t"<<ten2<<"\t"<<W<<"\t"<<PV<<"\t"<<KE<<"\t"<<SE<<"\t"<<fixedBoundary<<"\t"<<ten3<<"\t"<<tA<<std::endl;
-        std::cout<<"DIFF"<<std::endl;
-        std::cout<<BE-_pE[0]<<"\t"<<ten2-_pE[1]<<"\t"<<W-_pE[2]<<"\t"<<PV-_pE[3]<<"\t"<<KE-_pE[4]<<"\t"<<SE-_pE[5]<<"\t"<<fixedBoundary-_pE[6]<<"\t"<<ten3-_pE[7]<<"\t"<<tA-_pA<<std::endl;*/
+
         _pE[0]=BE;
         _pE[1]=ten2;
         _pE[2]=W;
@@ -924,7 +935,7 @@ void Physics::MembraneFromObj::updateBeads(QVector<Geometry::BeadInfo*> *beads,d
         _pE[7]=ten3;
         _pA=tA;
 
-    }
+    }*/
     //  std::cout<<tA-_initalArea<<std::endl;
     // _tension=(totalBE-_pBE)/(tA-_initalArea);
     // std::cout<<_tension<<std::endl;
@@ -946,6 +957,10 @@ void Physics::MembraneFromObj::update(){
     if(_appliedF<_F&&_tension<10){
         _appliedF+=3e-2;
     }
+/*
+    if(_radialForce>-600){
+        _radialForce-=5e-3;
+    }*/
     if(_RESET){
         RESET();
     }
@@ -973,6 +988,7 @@ void Physics::MembraneFromObj::update(){
 
     if(!_RESET&&(_step%1000==0||_capture||!_INIT)){
         double cR=-1;
+        saveHookEnergy();
         for(int i=0;i<_xprofile->size();i++){
             auto b=_xprofile->at(i);
 
@@ -1026,7 +1042,7 @@ void Physics::MembraneFromObj::update(){
                 _appliedF=std::fmin(_appliedF,_F);
             }*/
             if(_step-_pstep>100){
-                _radialForce-=fmax(-10,fmin(10,((_tension-_ptension)*0.1+(2e-2)*(_tension))*(_step-_pstep)*_DT*3e4));
+               // _radialForce-=fmax(-10,fmin(10,((_tension-_ptension)*0.1+(2e-2)*(_tension))*(_step-_pstep)*_DT*3e4));
 
                 _ptension=_tension;
             }
@@ -1058,7 +1074,7 @@ void Physics::MembraneFromObj::update(){
 
         _tension=(strain*(14.607392476665238)+param*(2.611268641852894)+(464.58341269938956))*cR/mRdis;;
         */
-        std::cout<<"TEN:"<<_THRESHOLD*_radiusFactor<<"\t"<<_maxR<<"\t"<<_initalArea<<"...\tSS:  "<<strain<<"\t"<<param<<" ten\t"<<_tension<<"\t"<<_kappaFactor<<"\t"<<_kappa<<"\t"<<_radiusFactor<<std::endl;
+        std::cout<<"TEN:"<<_THRESHOLD*_radiusFactor<<"\t"<<_maxR<<"\t"<<_frad<<"\t"<<_initalArea<<"...\tSS:  "<<strain<<"\t"<<param<<" ten\t"<<_tension<<"\t"<<_kappaFactor<<"\t"<<_kappa<<"\t"<<_radiusFactor<<std::endl;
         std::cout<<"rForce"<<_radialForce<<"\t"<<_appliedF<<std::endl;
         //std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_border->at(0)->_coords->len()<<"\t"<< _kappaFactor<<"_"<<mRdis<<"\t"<<bb->_coords->_coords[0]<<"\t"<<_Rind<<"\t"<<_radialForce<<std::endl;
         //std::cout<<_appliedF<<"\t"<<_sf->_k<<"\t"<<_initalArea<<"\t"<<_frad<<"\t"<<_border->at(0)->_coords->len()<<"\t"<< _kappaFactor<<"_"<<mRdis<<"\t"<<_Rind<<"\t"<<_radialForce<<std::endl;
@@ -1168,3 +1184,25 @@ double Physics::MembraneFromObj::calE(int i){
     return ret;
 }
 
+void Physics::MembraneFromObj::saveHookEnergy(){
+    auto s=QString(R"(C:\Users\sm2983\Documents\Projects\Membrane\Results\Shape_Scaled\Shape_%1_HOOK_%2.txt)").arg(*_shape,*_title);
+    auto file=new QFile(s);
+
+
+    if (!file->open(QIODevice::WriteOnly | QIODevice::Text)){
+        assert(0)   ;
+        return;
+    }
+    auto out=new QTextStream(file);
+    for(int i=0;i<_disc->_edges->size();i++){
+        auto e=_disc->_edges->at(i);
+        out->operator<<(e->_vid1->ID);
+        out->operator<<("\t");
+        out->operator<<(e->_vid2->ID);
+        out->operator<<("\t");
+        out->operator<<(_sf->calE(e));
+        out->operator<<("\r\n");
+    }
+    file->close();
+    delete out;
+}

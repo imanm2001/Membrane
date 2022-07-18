@@ -5,7 +5,7 @@ void Geometry::Edge::location(Physics::VecD3d* ret){
     ret->add(_vid2->_coords);
     ret->multConst(0.5);
 }
-Geometry::Edge::Edge(QObject * p,Physics::BeadInfo* vid1,Physics::BeadInfo* vid2)
+Geometry::Edge::Edge(QObject * p,Physics::BeadInfo* vid1,Physics::BeadInfo* vid2):_restLengthScale(1)
 {
     _vid1=vid1;
     _vid2=vid2;

@@ -50,7 +50,10 @@ protected:
                auto fins=new QTextStream(f);
                int s;
                fins->operator>>(s);
-               assert(s==_beads->size());
+               if(s!=_beads->size()){
+                   std::cout<<s<<"\t"<<_beads->size()<<std::endl;
+                    assert(s==_beads->size());
+               }
 
                double x,y,z;
                for(int i=0;i<_beads->size();i++){

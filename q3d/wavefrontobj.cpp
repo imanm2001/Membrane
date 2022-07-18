@@ -33,9 +33,10 @@ Geometry::WaveFrontObj::WaveFrontObj(QString path)
                         double z=array.at(3).toDouble();
                         auto *b=new Physics::BeadInfo(this,new Physics::VecD3d(x,y,z),BEADGAMMA,_beads->size());
                         assert(b->_coords->len()!=0);
-                        _beads->append(b);
+                        _beads->append(b);     
                     }else if(command=="f"){
                         int ind1,ind2,ind3;
+                        ind1=ind2=ind3=0;
                         if(array.size()==4){
                             ind1=array[1].toInt()-1;
                             ind2=array[2].toInt()-1;

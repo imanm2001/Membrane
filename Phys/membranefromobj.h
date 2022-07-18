@@ -59,7 +59,7 @@ public:
     void Project2D(VecD3d**,VecD3d*,VecD3d*,VecD3d*);
     void INIT();
     void RESET();
-
+    void saveHookEnergy();
 
 };
 
