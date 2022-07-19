@@ -7,10 +7,11 @@
 #define _T 1
 #define _E 2*_K/1.73205081
 #define _THRESHOLD 42
-#define _F 453
+#define _F 465
 
 #define _DT 3e-6
 #define _COMPRESSIBLE_ 1
+#define SIGN(x) (x>=0?1:-1)
 Physics::MembraneFromObj::MembraneFromObj(double dt):SurfaceWithPhysics(),_dt(dt),_appliedF(0),_frad(55),_INIT(0)
 {
     _dtF=1;
